@@ -13,9 +13,11 @@
       "backgroundColor": "#3D52D5"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.veryfy.app"
     },
     "android": {
+      "package": "com.veryfy.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
