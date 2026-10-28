@@ -16,7 +16,6 @@ import {
   MapPin,
   ChevronDown,
   ChevronUp,
-  CheckCircle,
 } from 'lucide-react-native';
 import { theme } from '../theme';
 

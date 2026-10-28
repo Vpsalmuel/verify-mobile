@@ -7,7 +7,6 @@ import {
   ScrollView,
   Modal,
   Image,
-  Dimensions,
 } from 'react-native';
 import { X, Clock, CheckCircle2 } from 'lucide-react-native';
 import { theme } from '../theme';

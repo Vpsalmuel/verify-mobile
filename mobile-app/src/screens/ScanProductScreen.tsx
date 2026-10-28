@@ -16,7 +16,6 @@ import {
   FlashlightOff,
   Keyboard,
   X,
-  QrCode,
   ScanLine,
 } from 'lucide-react-native';
 import { theme } from '../theme';
@@ -110,7 +109,7 @@ export const ScanProductScreen: React.FC<ScanProductScreenProps> = ({
         {/* Bottom Actions */}
         <SafeAreaView style={styles.safeFooter}>
           <View style={styles.footerContainer}>
-            <Text style={styles.cantScanText}>Can't scan the code?</Text>
+            <Text style={styles.cantScanText}>Can’t scan the code?</Text>
             <TouchableOpacity
               style={styles.manualEntryButton}
               activeOpacity={0.8}
