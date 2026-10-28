@@ -13,9 +13,11 @@
       "backgroundColor": "#3D52D5"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.veryfy.app"
     },
     "android": {
+      "package": "com.veryfy.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -54,6 +56,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "owner": "kufrey",
+    "extra": {
+      "eas": {
+        "projectId": "6f27175f-0bb5-4beb-9895-2b48323d7d70"
+      }
     }
   }
 }
