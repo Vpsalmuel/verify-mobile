@@ -49,7 +49,7 @@ export const AlertDetailsScreen: React.FC<AlertDetailsScreenProps> = ({
           {/* Hero Banner Carousel / Image */}
           <View style={styles.carouselContainer}>
             <Image
-              source={require('../assets/alert-banner.png')}
+              source={require('../assets/alerts-hero.png')}
               style={styles.bannerImage}
               resizeMode="cover"
             />

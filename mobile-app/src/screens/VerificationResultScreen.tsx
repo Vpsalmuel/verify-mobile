@@ -12,13 +12,11 @@ import {
 } from 'react-native';
 import {
   ArrowLeft,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
   Package,
   Info,
 } from 'lucide-react-native';
 import { theme } from '../theme';
+import { statusIcons } from '../components/StatusBadge';
 
 export type VerificationState = 'verified' | 'not-verified' | 'invalid';
 
@@ -55,7 +53,7 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
       badgeBg: theme.colors.verifiedBorder,
       badgeText: theme.colors.verifiedText,
       badgeLabel: 'Verified',
-      Icon: CheckCircle2,
+      Icon: statusIcons.verified,
       cardBg: theme.colors.verifiedBg,
       cardBorder: theme.colors.verifiedBorder,
       headline: 'The Uni-Code matched.',
@@ -64,9 +62,9 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
     },
     'not-verified': {
       badgeBg: theme.colors.notVerifiedBorder,
-      badgeText: theme.colors.white,
+      badgeText: theme.colors.notVerifiedBg,
       badgeLabel: 'Not verified',
-      Icon: AlertCircle,
+      Icon: statusIcons['not-verified'],
       cardBg: theme.colors.notVerifiedBg,
       cardBorder: theme.colors.notVerifiedBorder,
       headline: 'We couldn’t confirm this code.',
@@ -77,7 +75,7 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
       badgeBg: theme.colors.invalidBorder,
       badgeText: theme.colors.white,
       badgeLabel: 'Invalid',
-      Icon: XCircle,
+      Icon: statusIcons.invalid,
       cardBg: theme.colors.invalidBg,
       cardBorder: theme.colors.invalidBorder,
       headline: 'This code requires caution.',
@@ -108,12 +106,12 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Product Image Placeholder / Container */}
+          {/* Product Image */}
           <View style={styles.imageCard}>
             <Image
-              source={require('../assets/onboarding-hero.png')}
+              source={require('../assets/product-voltarol.png')}
               style={styles.productImage}
-              resizeMode="contain"
+              resizeMode="cover"
             />
           </View>
 
@@ -144,7 +142,7 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
                 { backgroundColor: config.badgeBg },
               ]}
             >
-              <config.Icon size={14} color={config.badgeText} />
+              <config.Icon size={16} color={config.badgeBg} fill={config.badgeText} />
               <Text style={[styles.statusPillText, { color: config.badgeText }]}>
                 {config.badgeLabel}
               </Text>
@@ -307,7 +305,7 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl,
   },
   imageCard: {
-    height: 180,
+    height: 166,
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     alignItems: 'center',
@@ -316,8 +314,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   productImage: {
-    width: '80%',
-    height: '80%',
+    width: '100%',
+    height: '100%',
   },
   productTitleRow: {
     flexDirection: 'row',

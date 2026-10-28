@@ -5,7 +5,7 @@ import { LanguageSettingsScreen } from './LanguageSettingsScreen';
 import { AppearanceSettingsScreen } from './AppearanceSettingsScreen';
 import { FAQsScreen } from './FAQsScreen';
 import { AboutScreen } from './AboutScreen';
-import { TermsPrivacyScreen } from './TermsPrivacyScreen';
+import { LegalDocumentScreen, privacyPolicy, termsOfUse } from './LegalDocumentScreen';
 import { TabKey } from '../../components/BottomNav';
 
 interface SettingsContainerScreenProps {
@@ -42,7 +42,11 @@ export const SettingsContainerScreen: React.FC<SettingsContainerScreenProps> = (
   }
 
   if (currentSubScreen === 'terms') {
-    return <TermsPrivacyScreen onBack={() => setCurrentSubScreen('menu')} />;
+    return <LegalDocumentScreen document={termsOfUse} onBack={() => setCurrentSubScreen('menu')} />;
+  }
+
+  if (currentSubScreen === 'privacy') {
+    return <LegalDocumentScreen document={privacyPolicy} onBack={() => setCurrentSubScreen('menu')} />;
   }
 
   return (

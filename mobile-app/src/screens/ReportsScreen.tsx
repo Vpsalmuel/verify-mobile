@@ -172,14 +172,11 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
                 style={styles.reportCard}
                 activeOpacity={0.7}
                 onPress={() => {
-                  let imageSource = require('../assets/report-product-1.png');
                   let outcomeType: 'mismatch' | 'no_issues' | 'in_progress' = 'in_progress';
 
                   if (item.id === '2') {
-                    imageSource = require('../assets/report-product-2.png');
                     outcomeType = 'mismatch';
                   } else if (item.id === '3') {
-                    imageSource = require('../assets/report-product-3.png');
                     outcomeType = 'no_issues';
                   }
 
@@ -194,7 +191,6 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
                     verificationResult: item.verificationResult,
                     findingTitle: item.findingTitle,
                     findingDescription: item.findingDescription,
-                    imageSource: imageSource,
                   });
                 }}
               >
