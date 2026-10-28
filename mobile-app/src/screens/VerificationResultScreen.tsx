@@ -17,6 +17,7 @@ import {
 } from 'lucide-react-native';
 import { theme } from '../theme';
 import { statusIcons } from '../components/StatusBadge';
+import { useI18n } from '../i18n';
 
 export type VerificationState = 'verified' | 'not-verified' | 'invalid';
 
@@ -37,7 +38,7 @@ interface VerificationResultScreenProps {
 export const VerificationResultScreen: React.FC<VerificationResultScreenProps> = ({
   status = 'verified',
   productName = 'VitaCore Paracetamol',
-  category = 'Medicine · 500 mg tablets',
+  category,
   uniCode = 'VFY-2849-1036',
   manufacturer = 'VitaCore Health Ltd.',
   dateApproved = '2024-01-20',
@@ -47,40 +48,38 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
   onReport,
   onTryAgain,
 }) => {
+  const { t } = useI18n();
   // Config per state
   const config = {
     verified: {
       badgeBg: theme.colors.verifiedBorder,
       badgeText: theme.colors.verifiedText,
-      badgeLabel: 'Verified',
+      badgeLabel: t.status.verified,
       Icon: statusIcons.verified,
       cardBg: theme.colors.verifiedBg,
       cardBorder: theme.colors.verifiedBorder,
-      headline: 'The Uni-Code matched.',
-      description:
-        'The Uni Code matched a registered product, with no suspicious activity detected.',
+      headline: t.result.verifiedHeadline,
+      description: t.result.verifiedDescription,
     },
     'not-verified': {
       badgeBg: theme.colors.notVerifiedBorder,
       badgeText: theme.colors.notVerifiedBg,
-      badgeLabel: 'Not verified',
+      badgeLabel: t.status.notVerified,
       Icon: statusIcons['not-verified'],
       cardBg: theme.colors.notVerifiedBg,
       cardBorder: theme.colors.notVerifiedBorder,
-      headline: 'We couldn’t confirm this code.',
-      description:
-        'Uni Code not recognised or verification incomplete. This doesn’t mean the product is counterfeit.',
+      headline: t.result.notVerifiedHeadline,
+      description: t.result.notVerifiedDescription,
     },
     invalid: {
       badgeBg: theme.colors.invalidBorder,
       badgeText: theme.colors.white,
-      badgeLabel: 'Invalid',
+      badgeLabel: t.status.invalid,
       Icon: statusIcons.invalid,
       cardBg: theme.colors.invalidBg,
       cardBorder: theme.colors.invalidBorder,
-      headline: 'This code requires caution.',
-      description:
-        'The verification information associated with this product is invalid or indicates a counterfeit product.',
+      headline: t.result.invalidHeadline,
+      description: t.result.invalidDescription,
     },
   }[status];
 
@@ -97,7 +96,7 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
           >
             <ArrowLeft size={22} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.navTitle}>Product Verification</Text>
+          <Text style={styles.navTitle}>{t.result.title}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -122,7 +121,7 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
             </View>
             <View style={styles.productNameStack}>
               <Text style={styles.productName}>{productName}</Text>
-              <Text style={styles.productCategory}>{category}</Text>
+              <Text style={styles.productCategory}>{category ?? t.result.productCategory}</Text>
             </View>
           </View>
 
@@ -155,20 +154,20 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
           {/* Body Section Dependent on status */}
           {status === 'verified' && (
             <View style={styles.detailsSection}>
-              <Text style={styles.sectionHeading}>Product details</Text>
+              <Text style={styles.sectionHeading}>{t.result.productDetails}</Text>
               <View style={styles.metadataCard}>
                 <View style={styles.metadataRow}>
-                  <Text style={styles.metaLabel}>Uni-code</Text>
+                  <Text style={styles.metaLabel}>{t.result.uniCode}</Text>
                   <Text style={styles.metaValue}>{uniCode}</Text>
                 </View>
                 <View style={styles.divider} />
                 <View style={styles.metadataRow}>
-                  <Text style={styles.metaLabel}>Manufacturer</Text>
+                  <Text style={styles.metaLabel}>{t.result.manufacturer}</Text>
                   <Text style={styles.metaValue}>{manufacturer}</Text>
                 </View>
                 <View style={styles.divider} />
                 <View style={styles.metadataRow}>
-                  <Text style={styles.metaLabel}>Date Approved</Text>
+                  <Text style={styles.metaLabel}>{t.result.dateApproved}</Text>
                   <Text style={styles.metaValue}>{dateApproved}</Text>
                 </View>
               </View>
@@ -177,19 +176,15 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
 
           {status === 'not-verified' && (
             <View style={styles.detailsSection}>
-              <Text style={styles.sectionHeading}>What to do next</Text>
+              <Text style={styles.sectionHeading}>{t.result.whatToDoNext}</Text>
               <View style={styles.guidanceList}>
                 <View style={styles.guidanceItem}>
                   <Info size={16} color={theme.colors.textSecondary} />
-                  <Text style={styles.guidanceText}>
-                    Check every printed letter and number
-                  </Text>
+                  <Text style={styles.guidanceText}>{t.result.checkEveryCharacter}</Text>
                 </View>
                 <View style={styles.guidanceItem}>
                   <Info size={16} color={theme.colors.textSecondary} />
-                  <Text style={styles.guidanceText}>
-                    Try scanning or entering the code again
-                  </Text>
+                  <Text style={styles.guidanceText}>{t.result.tryAgainHint}</Text>
                 </View>
               </View>
             </View>
@@ -198,9 +193,7 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
           {status === 'invalid' && (
             <View style={styles.noticeBox}>
               <Info size={18} color={theme.colors.textSecondary} style={{ marginTop: 2 }} />
-              <Text style={styles.noticeBoxText}>
-                Digital verification doesn’t confirm physical authenticity. Check HiddenMark and match its code with the printed Uni Code.
-              </Text>
+              <Text style={styles.noticeBoxText}>{t.result.physicalNotice}</Text>
             </View>
           )}
         </ScrollView>
@@ -214,14 +207,14 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
                 activeOpacity={0.85}
                 onPress={onScanAnother}
               >
-                <Text style={styles.primaryBtnText}>Scan another product</Text>
+                <Text style={styles.primaryBtnText}>{t.result.scanAnother}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.secondaryBtn}
                 activeOpacity={0.8}
                 onPress={onDone}
               >
-                <Text style={styles.secondaryBtnText}>Go to homepage</Text>
+                <Text style={styles.secondaryBtnText}>{t.result.goHome}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -233,14 +226,14 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
                 activeOpacity={0.85}
                 onPress={onTryAgain || onScanAnother}
               >
-                <Text style={styles.primaryBtnText}>Try again</Text>
+                <Text style={styles.primaryBtnText}>{t.result.tryAgain}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.secondaryBtn}
                 activeOpacity={0.8}
                 onPress={onDone}
               >
-                <Text style={styles.secondaryBtnText}>Go to homepage</Text>
+                <Text style={styles.secondaryBtnText}>{t.result.goHome}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -252,14 +245,14 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
                 activeOpacity={0.85}
                 onPress={onReport}
               >
-                <Text style={styles.primaryBtnText}>Report this product</Text>
+                <Text style={styles.primaryBtnText}>{t.result.reportThisProduct}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.secondaryBtn}
                 activeOpacity={0.8}
                 onPress={onDone}
               >
-                <Text style={styles.secondaryBtnText}>Go to homepage</Text>
+                <Text style={styles.secondaryBtnText}>{t.result.goHome}</Text>
               </TouchableOpacity>
             </>
           )}

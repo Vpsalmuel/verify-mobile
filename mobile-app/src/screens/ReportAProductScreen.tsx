@@ -9,39 +9,142 @@ import {
   ScrollView,
   TextInput,
   Platform,
+  Image,
+  Alert,
+  ActivityIndicator,
+  Linking,
 } from 'react-native';
-import {
-  ArrowLeft,
-  Camera,
-  MapPin,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
+import { ArrowLeft, Camera, MapPin, ChevronDown, ChevronUp, X, LocateFixed } from 'lucide-react-native';
 import { theme } from '../theme';
+import { useI18n } from '../i18n';
+import { IssueKey, useReports } from '../state/reports';
 
 interface ReportAProductScreenProps {
   onBack: () => void;
   onSubmitSuccess: () => void;
 }
 
-const issueOptions = [
-  'Suspected counterfeit',
-  'Verification failed',
-  'Packaging looks unusual',
-  'Product source is unclear',
-  'Other',
+const issueOptions: IssueKey[] = [
+  'counterfeit',
+  'verificationFailed',
+  'unusualPackaging',
+  'sourceUnclear',
+  'other',
 ];
+
+type LocationMode = 'current' | 'manual';
+type LocationStatus = 'idle' | 'loading' | 'denied' | 'error';
+
+function formatAddress(place: Location.LocationGeocodedAddress | undefined, coords: Location.LocationObjectCoords) {
+  if (place) {
+    const street = [place.streetNumber, place.street].filter(Boolean).join(' ');
+    const parts = [place.name !== street ? place.name : null, street, place.district ?? place.city, place.region];
+    const text = parts.filter(Boolean).join(', ');
+    if (text) return text;
+  }
+  return `${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)}`;
+}
 
 export const ReportAProductScreen: React.FC<ReportAProductScreenProps> = ({
   onBack,
   onSubmitSuccess,
 }) => {
+  const { t } = useI18n();
+  const { addReport } = useReports();
   const [productName, setProductName] = useState('');
-  const [selectedIssue, setSelectedIssue] = useState('Suspected counterfeit');
+  const [showNameError, setShowNameError] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState<IssueKey>('counterfeit');
   const [additionalDetails, setAdditionalDetails] = useState('');
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [locationExpanded, setLocationExpanded] = useState(false);
-  const [address, setAddress] = useState('14 Broad Street, Lagos Island');
+  const [locationMode, setLocationMode] = useState<LocationMode>('manual');
+  const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
+  const [address, setAddress] = useState('');
   const [storeName, setStoreName] = useState('');
+
+  const useCurrentLocation = async () => {
+    setLocationMode('current');
+    setLocationStatus('loading');
+    try {
+      const { granted } = await Location.requestForegroundPermissionsAsync();
+      if (!granted) {
+        setLocationStatus('denied');
+        return;
+      }
+      const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      let place: Location.LocationGeocodedAddress | undefined;
+      try {
+        // Street lookup is only available on Android and iOS; fall back to coordinates.
+        [place] = await Location.reverseGeocodeAsync(position.coords);
+      } catch {
+        place = undefined;
+      }
+      setAddress(formatAddress(place, position.coords));
+      setLocationStatus('idle');
+    } catch {
+      setLocationStatus('error');
+    }
+  };
+
+  const pickPhoto = async (source: 'camera' | 'library') => {
+    const permission =
+      source === 'camera'
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      const message =
+        source === 'camera' ? t.reportForm.cameraPermissionDenied : t.reportForm.libraryPermissionDenied;
+      Alert.alert(t.reportForm.photoSourceTitle, message, [
+        { text: t.common.cancel, style: 'cancel' },
+        { text: t.scan.openSettings, onPress: () => Linking.openSettings() },
+      ]);
+      return;
+    }
+    const options: ImagePicker.ImagePickerOptions = { mediaTypes: ['images'], quality: 0.7 };
+    const result =
+      source === 'camera'
+        ? await ImagePicker.launchCameraAsync(options)
+        : await ImagePicker.launchImageLibraryAsync(options);
+    if (!result.canceled && result.assets[0]) setPhotoUri(result.assets[0].uri);
+  };
+
+  const choosePhotoSource = () => {
+    // Web can't show a multi-button alert; go straight to the file picker.
+    if (Platform.OS === 'web') {
+      pickPhoto('library');
+      return;
+    }
+    Alert.alert(t.reportForm.photoSourceTitle, t.reportForm.photoSourceBody, [
+      { text: t.reportForm.takePhoto, onPress: () => pickPhoto('camera') },
+      { text: t.reportForm.chooseFromLibrary, onPress: () => pickPhoto('library') },
+      { text: t.common.cancel, style: 'cancel' },
+    ]);
+  };
+
+  const handleSubmit = () => {
+    if (!productName.trim()) {
+      setShowNameError(true);
+      return;
+    }
+    addReport({
+      productName: productName.trim(),
+      issue: selectedIssue,
+      details: additionalDetails.trim() || undefined,
+      photoUri: photoUri ?? undefined,
+      address: address.trim() || undefined,
+      storeName: storeName.trim() || undefined,
+    });
+    onSubmitSuccess();
+  };
+
+  const locationMessage =
+    locationStatus === 'denied'
+      ? t.reportForm.locationPermissionDenied
+      : locationStatus === 'error'
+        ? t.reportForm.locationError
+        : null;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -49,10 +152,16 @@ export const ReportAProductScreen: React.FC<ReportAProductScreenProps> = ({
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} activeOpacity={0.7} onPress={onBack}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            activeOpacity={0.7}
+            onPress={onBack}
+            accessibilityRole="button"
+            accessibilityLabel={t.common.back}
+          >
             <ArrowLeft size={22} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Report a Product</Text>
+          <Text style={styles.headerTitle}>{t.common.reportAProduct}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -60,26 +169,28 @@ export const ReportAProductScreen: React.FC<ReportAProductScreenProps> = ({
           style={styles.scrollArea}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.introSubtitle}>
-            Tell us about the product and the issue you’ve noticed
-          </Text>
+          <Text style={styles.introSubtitle}>{t.reportForm.intro}</Text>
 
           {/* Product Name */}
           <Text style={styles.fieldLabel}>
-            Product name <Text style={styles.requiredStar}>*</Text>
+            {t.reportForm.productName} <Text style={styles.requiredStar}>*</Text>
           </Text>
           <TextInput
-            style={styles.textInput}
-            placeholder="E.g Emzor Paracetamol"
+            style={[styles.textInput, showNameError && !productName.trim() && styles.textInputError]}
+            placeholder={t.reportForm.productNamePlaceholder}
             placeholderTextColor={theme.colors.textTertiary}
             value={productName}
             onChangeText={setProductName}
           />
+          {showNameError && !productName.trim() && (
+            <Text style={styles.errorText}>{t.reportForm.productNameRequired}</Text>
+          )}
 
           {/* What is wrong with the product? */}
           <Text style={[styles.fieldLabel, { marginTop: theme.spacing.lg }]}>
-            What is wrong with the product?
+            {t.reportForm.whatIsWrong}
           </Text>
           <View style={styles.radioGroupCard}>
             {issueOptions.map((issue) => {
@@ -90,11 +201,13 @@ export const ReportAProductScreen: React.FC<ReportAProductScreenProps> = ({
                   style={styles.radioOptionRow}
                   activeOpacity={0.7}
                   onPress={() => setSelectedIssue(issue)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ checked: isSelected }}
                 >
                   <View style={[styles.radioCircle, isSelected && styles.radioCircleSelected]}>
                     {isSelected && <View style={styles.radioDot} />}
                   </View>
-                  <Text style={styles.radioText}>{issue}</Text>
+                  <Text style={styles.radioText}>{t.reportForm.issues[issue]}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -102,11 +215,11 @@ export const ReportAProductScreen: React.FC<ReportAProductScreenProps> = ({
 
           {/* Additional details */}
           <Text style={[styles.fieldLabel, { marginTop: theme.spacing.lg }]}>
-            Additional details (optional)
+            {t.reportForm.additionalDetails}
           </Text>
           <TextInput
             style={styles.textArea}
-            placeholder="Tell us what you noticed"
+            placeholder={t.reportForm.additionalDetailsPlaceholder}
             placeholderTextColor={theme.colors.textTertiary}
             multiline
             numberOfLines={4}
@@ -114,16 +227,35 @@ export const ReportAProductScreen: React.FC<ReportAProductScreenProps> = ({
             onChangeText={setAdditionalDetails}
           />
 
-          {/* Add photo upload box */}
-          <TouchableOpacity style={styles.photoUploadBox} activeOpacity={0.8}>
-            <Camera size={22} color={theme.colors.textSecondary} />
-            <View>
-              <Text style={styles.photoTitle}>Add photo</Text>
-              <Text style={styles.photoSubtitle}>Optional · JPG or PNG, up to 5 MB</Text>
+          {/* Photo */}
+          {photoUri ? (
+            <View style={[styles.photoUploadBox, styles.photoSelectedBox]}>
+              <Image source={{ uri: photoUri }} style={styles.photoThumb} />
+              <TouchableOpacity style={styles.photoChange} activeOpacity={0.7} onPress={choosePhotoSource}>
+                <Text style={styles.photoTitle}>{t.reportForm.changePhoto}</Text>
+                <Text style={styles.photoSubtitle}>{t.reportForm.photoHint}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.photoRemove}
+                activeOpacity={0.7}
+                onPress={() => setPhotoUri(null)}
+                accessibilityRole="button"
+                accessibilityLabel={t.reportForm.removePhoto}
+              >
+                <X size={18} color={theme.colors.textSecondary} />
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.photoUploadBox} activeOpacity={0.8} onPress={choosePhotoSource}>
+              <Camera size={22} color={theme.colors.textSecondary} />
+              <View>
+                <Text style={styles.photoTitle}>{t.reportForm.addPhoto}</Text>
+                <Text style={styles.photoSubtitle}>{t.reportForm.photoHint}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
 
-          {/* Location Dropdown Section */}
+          {/* Location */}
           <View style={styles.locationContainer}>
             <TouchableOpacity
               style={styles.locationHeaderRow}
@@ -132,7 +264,7 @@ export const ReportAProductScreen: React.FC<ReportAProductScreenProps> = ({
             >
               <View style={styles.locationHeaderLeft}>
                 <MapPin size={18} color={theme.colors.textSecondary} />
-                <Text style={styles.locationTitle}>Add location</Text>
+                <Text style={styles.locationTitle}>{t.reportForm.addLocation}</Text>
               </View>
               {locationExpanded ? (
                 <ChevronUp size={18} color={theme.colors.textSecondary} />
@@ -143,35 +275,75 @@ export const ReportAProductScreen: React.FC<ReportAProductScreenProps> = ({
 
             {locationExpanded && (
               <View style={styles.locationBody}>
-                <Text style={styles.locationBodySubtitle}>
-                  Where did you find this products
-                </Text>
-                <Text style={styles.locationBodyCaption}>
-                  Supermarket, pharmacy, open market or retail shop.
-                </Text>
+                <Text style={styles.locationBodySubtitle}>{t.reportForm.whereFound}</Text>
+                <Text style={styles.locationBodyCaption}>{t.reportForm.whereFoundHint}</Text>
 
                 <View style={styles.locationModeRow}>
-                  <TouchableOpacity style={styles.locationPillActive}>
-                    <Text style={styles.locationPillTextActive}>Use my current location</Text>
+                  <TouchableOpacity
+                    style={locationMode === 'current' ? styles.locationPillActive : styles.locationPillInactive}
+                    activeOpacity={0.7}
+                    onPress={useCurrentLocation}
+                    disabled={locationStatus === 'loading'}
+                  >
+                    <LocateFixed
+                      size={12}
+                      color={locationMode === 'current' ? theme.colors.primary : theme.colors.textSecondary}
+                    />
+                    <Text
+                      style={
+                        locationMode === 'current'
+                          ? styles.locationPillTextActive
+                          : styles.locationPillTextInactive
+                      }
+                    >
+                      {t.reportForm.useCurrentLocation}
+                    </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.locationPillInactive}>
-                    <Text style={styles.locationPillTextInactive}>Enter location manually</Text>
+                  <TouchableOpacity
+                    style={locationMode === 'manual' ? styles.locationPillActive : styles.locationPillInactive}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setLocationMode('manual');
+                      setLocationStatus('idle');
+                    }}
+                  >
+                    <Text
+                      style={
+                        locationMode === 'manual'
+                          ? styles.locationPillTextActive
+                          : styles.locationPillTextInactive
+                      }
+                    >
+                      {t.reportForm.enterManually}
+                    </Text>
                   </TouchableOpacity>
                 </View>
 
-                <Text style={styles.fieldLabelSmall}>Address or landmark</Text>
+                {locationStatus === 'loading' && (
+                  <View style={styles.locationStatusRow}>
+                    <ActivityIndicator size="small" color={theme.colors.primary} />
+                    <Text style={styles.locationStatusText}>{t.reportForm.findingLocation}</Text>
+                  </View>
+                )}
+                {locationMessage && (
+                  <Text style={[styles.locationStatusText, styles.locationStatusError]}>
+                    {locationMessage}
+                  </Text>
+                )}
+
+                <Text style={styles.fieldLabelSmall}>{t.reportForm.address}</Text>
                 <TextInput
                   style={styles.textInput}
+                  placeholder={t.reportForm.addressPlaceholder}
+                  placeholderTextColor={theme.colors.textTertiary}
                   value={address}
                   onChangeText={setAddress}
                 />
 
-                <Text style={[styles.fieldLabelSmall, { marginTop: 12 }]}>
-                  Store or business name
-                </Text>
+                <Text style={[styles.fieldLabelSmall, { marginTop: 12 }]}>{t.reportForm.storeName}</Text>
                 <TextInput
                   style={styles.textInput}
-                  placeholder="E.g ABC supermarket"
+                  placeholder={t.reportForm.storeNamePlaceholder}
                   placeholderTextColor={theme.colors.textTertiary}
                   value={storeName}
                   onChangeText={setStoreName}
@@ -181,12 +353,8 @@ export const ReportAProductScreen: React.FC<ReportAProductScreenProps> = ({
           </View>
 
           {/* Submit Button */}
-          <TouchableOpacity
-            style={styles.submitButton}
-            activeOpacity={0.85}
-            onPress={onSubmitSuccess}
-          >
-            <Text style={styles.submitButtonText}>Submit Report</Text>
+          <TouchableOpacity style={styles.submitButton} activeOpacity={0.85} onPress={handleSubmit}>
+            <Text style={styles.submitButtonText}>{t.reportForm.submit}</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -379,6 +547,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   locationPillActive: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: theme.radius.full,
@@ -390,6 +561,9 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.weights.medium,
   },
   locationPillInactive: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: theme.radius.full,
@@ -410,5 +584,50 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: theme.typography.sizes.md,
     fontWeight: theme.typography.weights.medium,
+  },
+  textInputError: {
+    borderColor: theme.colors.invalidBorder,
+  },
+  errorText: {
+    marginTop: 6,
+    fontSize: theme.typography.sizes.xs,
+    color: theme.colors.invalidText,
+  },
+  photoSelectedBox: {
+    borderStyle: 'solid',
+    backgroundColor: theme.colors.white,
+    paddingVertical: theme.spacing.md,
+  },
+  photoThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.surface,
+  },
+  photoChange: {
+    flex: 1,
+  },
+  photoRemove: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.surface,
+  },
+  locationStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  locationStatusText: {
+    fontSize: theme.typography.sizes.xs,
+    color: theme.colors.textSecondary,
+  },
+  locationStatusError: {
+    color: theme.colors.invalidText,
+    marginBottom: 12,
+    lineHeight: theme.typography.lineHeights.xs,
   },
 });

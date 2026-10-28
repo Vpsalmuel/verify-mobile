@@ -12,31 +12,26 @@ import {
 import { ArrowLeft, ChevronRight } from 'lucide-react-native';
 import { theme } from '../theme';
 import { StatusBadge, BadgeStatus } from '../components/StatusBadge';
-import { FilterChips, FilterChipOption } from '../components/FilterChips';
+import { FilterChips } from '../components/FilterChips';
+import { useI18n } from '../i18n';
 
 type HistoryFilter = 'all' | BadgeStatus;
 
 export interface HistoryItem {
   id: string;
   name: string;
-  meta: string;
+  source: 'authentic' | 'sourceUnclear';
+  date: string;
   status: BadgeStatus;
 }
 
-const filterOptions: FilterChipOption<HistoryFilter>[] = [
-  { key: 'all', label: 'All' },
-  { key: 'verified', label: 'Verified' },
-  { key: 'invalid', label: 'Invalid' },
-  { key: 'not-verified', label: 'Not verified' },
-];
-
 const mockHistory: HistoryItem[] = [
-  { id: '1', name: 'PureGlow Face Cream', meta: 'Authentic · 13 Jun', status: 'verified' },
-  { id: '2', name: 'Chocolate wafers', meta: 'Source unclear · 12 Jun', status: 'verified' },
-  { id: '3', name: 'Chocolate wafers', meta: 'Source unclear · 12 Jun', status: 'invalid' },
-  { id: '4', name: 'Chocolate wafers', meta: 'Source unclear · 12 Jun', status: 'not-verified' },
-  { id: '5', name: 'Chocolate wafers', meta: 'Source unclear · 12 Jun', status: 'invalid' },
-  { id: '6', name: 'Chocolate wafers', meta: 'Source unclear · 12 Jun', status: 'verified' },
+  { id: '1', name: 'PureGlow Face Cream', source: 'authentic', date: '13 Jun', status: 'verified' },
+  { id: '2', name: 'Chocolate wafers', source: 'sourceUnclear', date: '12 Jun', status: 'verified' },
+  { id: '3', name: 'Chocolate wafers', source: 'sourceUnclear', date: '12 Jun', status: 'invalid' },
+  { id: '4', name: 'Chocolate wafers', source: 'sourceUnclear', date: '12 Jun', status: 'not-verified' },
+  { id: '5', name: 'Chocolate wafers', source: 'sourceUnclear', date: '12 Jun', status: 'invalid' },
+  { id: '6', name: 'Chocolate wafers', source: 'sourceUnclear', date: '12 Jun', status: 'verified' },
 ];
 
 interface HistoryScreenProps {
@@ -46,6 +41,7 @@ interface HistoryScreenProps {
 }
 
 export const HistoryScreen: React.FC<HistoryScreenProps> = ({ onBack, onScanPress, onItemPress }) => {
+  const { t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<HistoryFilter>('all');
 
   const items = mockHistory.filter(
@@ -61,7 +57,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ onBack, onScanPres
           <TouchableOpacity style={styles.backBtn} activeOpacity={0.7} onPress={onBack}>
             <ArrowLeft size={24} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>History</Text>
+          <Text style={styles.headerTitle}>{t.history.title}</Text>
           <View style={styles.backBtn} />
         </View>
 
@@ -70,7 +66,16 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ onBack, onScanPres
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <FilterChips options={filterOptions} value={activeFilter} onChange={setActiveFilter} />
+          <FilterChips
+            options={[
+              { key: 'all', label: t.history.all },
+              { key: 'verified', label: t.status.verified },
+              { key: 'invalid', label: t.status.invalid },
+              { key: 'not-verified', label: t.status.notVerified },
+            ]}
+            value={activeFilter}
+            onChange={setActiveFilter}
+          />
 
           <View style={styles.list}>
             {items.map((item) => (
@@ -84,7 +89,9 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ onBack, onScanPres
                   <Text style={styles.itemName} numberOfLines={1}>
                     {item.name}
                   </Text>
-                  <Text style={styles.itemMeta}>{item.meta}</Text>
+                  <Text style={styles.itemMeta}>
+                    {t.checkMeta[item.source]} · {item.date}
+                  </Text>
                 </View>
                 <View style={styles.cardRight}>
                   <StatusBadge status={item.status} />
@@ -93,7 +100,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ onBack, onScanPres
               </TouchableOpacity>
             ))}
             {items.length === 0 && (
-              <Text style={styles.emptyText}>No checks in this category yet.</Text>
+              <Text style={styles.emptyText}>{t.history.empty}</Text>
             )}
           </View>
         </ScrollView>
@@ -101,7 +108,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ onBack, onScanPres
         {/* Primary action */}
         <View style={styles.footer}>
           <TouchableOpacity style={styles.primaryButton} activeOpacity={0.85} onPress={onScanPress}>
-            <Text style={styles.primaryButtonText}>Scan a product</Text>
+            <Text style={styles.primaryButtonText}>{t.common.scanAProduct}</Text>
           </TouchableOpacity>
         </View>
       </View>

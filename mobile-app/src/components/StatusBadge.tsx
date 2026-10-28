@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { BadgeCheck, CircleHelp, OctagonX } from 'lucide-react-native';
 import { theme } from '../theme';
+import { useI18n } from '../i18n';
 
 export type BadgeStatus = 'verified' | 'not-verified' | 'invalid';
 
@@ -14,14 +15,17 @@ export const statusIcons = {
 };
 
 // Figma "Status Badge" (Small), as used in list rows.
-const variants = {
-  verified: { bg: theme.colors.verifiedBorder, text: theme.colors.verifiedText, label: 'Verified' },
+const variants: Record<
+  BadgeStatus,
+  { bg: string; text: string; label: 'verified' | 'notVerified' | 'invalid' }
+> = {
+  verified: { bg: theme.colors.verifiedBorder, text: theme.colors.verifiedText, label: 'verified' },
   'not-verified': {
     bg: theme.colors.surface,
     text: theme.colors.textForeground,
-    label: 'Not verified',
+    label: 'notVerified',
   },
-  invalid: { bg: theme.colors.invalidBorder, text: theme.colors.white, label: 'Invalid' },
+  invalid: { bg: theme.colors.invalidBorder, text: theme.colors.white, label: 'invalid' },
 };
 
 interface StatusBadgeProps {
@@ -30,13 +34,14 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label }) => {
+  const { t } = useI18n();
   const variant = variants[status];
   const Icon = statusIcons[status];
 
   return (
     <View style={[styles.badge, { backgroundColor: variant.bg }]}>
       <Icon size={16} color={variant.bg} fill={variant.text} />
-      <Text style={[styles.text, { color: variant.text }]}>{label || variant.label}</Text>
+      <Text style={[styles.text, { color: variant.text }]}>{label || t.status[variant.label]}</Text>
     </View>
   );
 };

@@ -13,55 +13,39 @@ import {
 } from 'react-native';
 import { Search, CalendarDays, BadgeCheck } from 'lucide-react-native';
 import { theme } from '../theme';
-import { FilterChips, FilterChipOption } from '../components/FilterChips';
+import { FilterChips } from '../components/FilterChips';
+import { useI18n } from '../i18n';
 
 type AlertFilter = 'all' | 'recalls' | 'counterfeit' | 'safety';
 
 interface AlertItem {
   id: string;
-  title: string;
-  description: string;
   date: string;
   brand: string;
   type: Exclude<AlertFilter, 'all'>;
 }
 
-const filterOptions: FilterChipOption<AlertFilter>[] = [
-  { key: 'all', label: 'All' },
-  { key: 'recalls', label: 'Recalls' },
-  { key: 'counterfeit', label: 'Counterfeit' },
-  { key: 'safety', label: 'Safety' },
-];
-
 const mockAlerts: AlertItem[] = [
   {
     id: '1',
-    title: 'Packaging guidance updated',
-    description: 'A certain batches has been recalled due to a reported safety concern',
     date: 'Sep 15, 2026',
     brand: 'Peak',
     type: 'recalls',
   },
   {
     id: '2',
-    title: 'Packaging guidance updated',
-    description: 'A certain batches has been recalled due to a reported safety concern',
     date: 'Sep 15, 2026',
     brand: 'Peak',
     type: 'counterfeit',
   },
   {
     id: '3',
-    title: 'Packaging guidance updated',
-    description: 'A certain batches has been recalled due to a reported safety concern',
     date: 'Sep 15, 2026',
     brand: 'Peak',
     type: 'safety',
   },
   {
     id: '4',
-    title: 'Packaging guidance updated',
-    description: 'A certain batches has been recalled due to a reported safety concern',
     date: 'Sep 15, 2026',
     brand: 'Peak',
     type: 'recalls',
@@ -75,6 +59,7 @@ interface AlertsScreenProps {
 export const AlertsScreen: React.FC<AlertsScreenProps> = ({
   onAlertPress,
 }) => {
+  const { t } = useI18n();
   const [activeFilter, setActiveFilter] = useState<AlertFilter>('all');
   const [query, setQuery] = useState('');
 
@@ -82,7 +67,8 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
   const alerts = mockAlerts.filter(
     (alert) =>
       (activeFilter === 'all' || alert.type === activeFilter) &&
-      (!q || `${alert.title} ${alert.description} ${alert.brand}`.toLowerCase().includes(q))
+      (!q ||
+        `${t.alerts.itemTitle} ${t.alerts.itemDescription} ${alert.brand}`.toLowerCase().includes(q))
   );
 
   return (
@@ -96,8 +82,8 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Alerts</Text>
-            <Text style={styles.subtitle}>important safety and authentication updates.</Text>
+            <Text style={styles.title}>{t.alerts.title}</Text>
+            <Text style={styles.subtitle}>{t.alerts.subtitle}</Text>
           </View>
 
           {/* Search */}
@@ -105,14 +91,23 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
             <Search size={20} color={theme.colors.textSecondary} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search products or alerts"
+              placeholder={t.alerts.searchPlaceholder}
               placeholderTextColor="#767676"
               value={query}
               onChangeText={setQuery}
             />
           </View>
 
-          <FilterChips options={filterOptions} value={activeFilter} onChange={setActiveFilter} />
+          <FilterChips
+            options={[
+              { key: 'all', label: t.alerts.all },
+              { key: 'recalls', label: t.alerts.recalls },
+              { key: 'counterfeit', label: t.alerts.counterfeit },
+              { key: 'safety', label: t.alerts.safety },
+            ]}
+            value={activeFilter}
+            onChange={setActiveFilter}
+          />
 
           <View style={styles.list}>
             {/* Featured alert */}
@@ -130,10 +125,8 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
                 />
               ))}
               <View style={styles.heroText}>
-                <Text style={styles.heroTitle}>Product verification</Text>
-                <Text style={styles.heroSubtitle}>
-                  A product alert has been issued for selected VitaCore Uni-code
-                </Text>
+                <Text style={styles.heroTitle}>{t.alerts.featuredTitle}</Text>
+                <Text style={styles.heroSubtitle}>{t.alerts.featuredSubtitle}</Text>
               </View>
             </TouchableOpacity>
 
@@ -152,9 +145,9 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
                 <View style={styles.alertText}>
                   <View style={styles.alertCopy}>
                     <Text style={styles.alertTitle} numberOfLines={1}>
-                      {alert.title}
+                      {t.alerts.itemTitle}
                     </Text>
-                    <Text style={styles.alertDescription}>{alert.description}</Text>
+                    <Text style={styles.alertDescription}>{t.alerts.itemDescription}</Text>
                   </View>
                   <View style={styles.metaRow}>
                     <View style={styles.metaItem}>
@@ -170,7 +163,7 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
                 </View>
               </TouchableOpacity>
             ))}
-            {alerts.length === 0 && <Text style={styles.emptyText}>No alerts match your search.</Text>}
+            {alerts.length === 0 && <Text style={styles.emptyText}>{t.alerts.empty}</Text>}
           </View>
         </ScrollView>
       </View>

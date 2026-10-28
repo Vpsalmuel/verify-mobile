@@ -17,16 +17,15 @@ import {
 } from 'lucide-react-native';
 import { theme } from '../theme';
 import { StatusBadge, BadgeStatus } from '../components/StatusBadge';
-import {
-  ReportDetailsBottomSheet,
-  ReportDetailsData,
-} from '../components/ReportDetailsBottomSheet';
+import { ReportDetailsBottomSheet } from '../components/ReportDetailsBottomSheet';
+import { useI18n } from '../i18n';
+import { ReportRecord, sampleReports } from '../state/reports';
 import { SafetyTipsBottomSheet } from '../components/SafetyTipsBottomSheet';
 
 export interface RecentCheckItem {
   id: string;
   name: string;
-  source: string;
+  source: 'authentic' | 'sourceUnclear';
   date: string;
   status: BadgeStatus;
 }
@@ -35,28 +34,28 @@ const mockRecentChecks: RecentCheckItem[] = [
   {
     id: '1',
     name: "Mama Bolaji & Daughther'...",
-    source: 'Source unclear',
+    source: 'sourceUnclear',
     date: '12 Jun',
     status: 'verified',
   },
   {
     id: '2',
     name: 'PureGlow Face Cream',
-    source: 'Source unclear',
+    source: 'sourceUnclear',
     date: '12 Jun',
     status: 'verified',
   },
   {
     id: '3',
     name: 'PureGlow Face Cream',
-    source: 'Source unclear',
+    source: 'sourceUnclear',
     date: '12 Jun',
     status: 'not-verified',
   },
   {
     id: '4',
     name: 'PureGlow Face Cream',
-    source: 'Source unclear',
+    source: 'sourceUnclear',
     date: '12 Jun',
     status: 'not-verified',
   },
@@ -73,7 +72,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onCheckItemPress,
   onViewAllPress,
 }) => {
-  const [selectedReport, setSelectedReport] = useState<ReportDetailsData | null>(null);
+  const { t } = useI18n();
+  const [selectedReport, setSelectedReport] = useState<ReportRecord | null>(null);
   const [safetyTipsVisible, setSafetyTipsVisible] = useState(false);
 
   return (
@@ -87,10 +87,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.welcomeTitle}>Welcome 👋</Text>
-            <Text style={styles.welcomeSubtitle}>
-              What are you verifying today?
-            </Text>
+            <Text style={styles.welcomeTitle}>{t.home.welcome}</Text>
+            <Text style={styles.welcomeSubtitle}>{t.home.subtitle}</Text>
           </View>
 
           {/* Blue Hero Action Card: "Verify a product" */}
@@ -104,11 +102,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             </View>
 
             <View style={styles.heroTextContent}>
-              <Text style={styles.heroPretitle}>START A CHECK</Text>
-              <Text style={styles.heroTitle}>Verify a product</Text>
-              <Text style={styles.heroSubtitle}>
-                Scan the code on the packaging or enter it manually
-              </Text>
+              <Text style={styles.heroPretitle}>{t.home.startACheck}</Text>
+              <Text style={styles.heroTitle}>{t.home.verifyAProduct}</Text>
+              <Text style={styles.heroSubtitle}>{t.home.verifySubtitle}</Text>
             </View>
 
             <ArrowRight size={22} color={theme.colors.white} />
@@ -124,21 +120,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
               <Info size={22} color={theme.colors.textSecondary} />
             </View>
             <View style={styles.noticeTextContent}>
-              <Text style={styles.noticeTitle}>
-                Stay safer when buying products
-              </Text>
-              <Text style={styles.noticeSubtitle}>
-                Four practical checks to remember
-              </Text>
+              <Text style={styles.noticeTitle}>{t.home.safetyTitle}</Text>
+              <Text style={styles.noticeSubtitle}>{t.home.safetySubtitle}</Text>
             </View>
             <ChevronRight size={20} color={theme.colors.textTertiary} />
           </TouchableOpacity>
 
           {/* Recent Checks Section */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Checks</Text>
+            <Text style={styles.sectionTitle}>{t.home.recentChecks}</Text>
             <TouchableOpacity onPress={onViewAllPress}>
-              <Text style={styles.viewAllText}>View all</Text>
+              <Text style={styles.viewAllText}>{t.home.viewAll}</Text>
             </TouchableOpacity>
           </View>
 
@@ -151,16 +143,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                 activeOpacity={0.7}
                 onPress={() => {
                   if (item.status === 'not-verified') {
-                    // Open "Under review" report details bottom sheet
-                    setSelectedReport({
-                      reportId: 'VFY-RP-10482',
-                      productName: item.name,
-                      submittedDate: 'Submitted 12 June 2025',
-                      status: 'under_review',
-                      reason: 'Product source is unclear',
-                      category: 'cosmetics',
-                      verificationResult: 'Suspicious',
-                    });
+                    // Open the "Under review" report for this product
+                    setSelectedReport({ ...sampleReports[0], productName: item.name });
                   } else if (onCheckItemPress) {
                     onCheckItemPress(item);
                   }
@@ -171,7 +155,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     {item.name}
                   </Text>
                   <Text style={styles.checkItemMeta}>
-                    {item.source} · {item.date}
+                    {t.checkMeta[item.source]} · {item.date}
                   </Text>
                 </View>
 
@@ -188,7 +172,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         <ReportDetailsBottomSheet
           visible={selectedReport !== null}
           onClose={() => setSelectedReport(null)}
-          data={selectedReport || undefined}
+          report={selectedReport}
         />
 
         {/* "Stay safer when buying products" tips sheet */}

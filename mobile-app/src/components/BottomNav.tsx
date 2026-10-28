@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Home, FileText, QrCode, Bell, Settings } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../theme';
+import { useI18n } from '../i18n';
 
 export type TabKey = 'home' | 'reports' | 'scan' | 'alerts' | 'settings';
 
@@ -18,6 +19,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onScanPress,
 }) => {
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
 
   return (
     <View style={[styles.container, { height: 72 + insets.bottom, paddingBottom: 8 + insets.bottom }]}>
@@ -37,7 +39,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             activeTab === 'home' ? styles.tabLabelActive : styles.tabLabelInactive,
           ]}
         >
-          Home
+          {t.tabs.home}
         </Text>
       </TouchableOpacity>
 
@@ -57,7 +59,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             activeTab === 'reports' ? styles.tabLabelActive : styles.tabLabelInactive,
           ]}
         >
-          Reports
+          {t.tabs.reports}
         </Text>
       </TouchableOpacity>
 
@@ -67,7 +69,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <QrCode size={24} color={theme.colors.white} />
         </View>
         <Text style={[styles.tabLabel, styles.tabLabelInactive, { marginTop: 4 }]}>
-          Scan
+          {t.tabs.scan}
         </Text>
       </TouchableOpacity>
 
@@ -87,7 +89,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             activeTab === 'alerts' ? styles.tabLabelActive : styles.tabLabelInactive,
           ]}
         >
-          Alerts
+          {t.tabs.alerts}
         </Text>
       </TouchableOpacity>
 
@@ -107,7 +109,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             activeTab === 'settings' ? styles.tabLabelActive : styles.tabLabelInactive,
           ]}
         >
-          Settings
+          {t.tabs.settings}
         </Text>
       </TouchableOpacity>
     </View>

@@ -10,12 +10,7 @@ import {
 import { CircleCheck, Circle, ScanLine } from 'lucide-react-native';
 import { theme } from '../theme';
 import { VeryfyLogo } from '../components/VeryfyLogo';
-
-const steps = [
-  'Reading product code',
-  'Checking product information',
-  'Reviewing verification details',
-];
+import { useI18n } from '../i18n';
 
 // Time each step stays active before moving on (mock until the verification API exists).
 const STEP_DURATION_MS = 900;
@@ -25,6 +20,8 @@ interface VerifyingProductScreenProps {
 }
 
 export const VerifyingProductScreen: React.FC<VerifyingProductScreenProps> = ({ onComplete }) => {
+  const { t } = useI18n();
+  const steps = t.verifying.steps;
   const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
@@ -34,7 +31,7 @@ export const VerifyingProductScreen: React.FC<VerifyingProductScreenProps> = ({ 
     }
     const timer = setTimeout(() => setActiveStep((step) => step + 1), STEP_DURATION_MS);
     return () => clearTimeout(timer);
-  }, [activeStep, onComplete]);
+  }, [activeStep, onComplete, steps.length]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -55,9 +52,9 @@ export const VerifyingProductScreen: React.FC<VerifyingProductScreenProps> = ({ 
               </View>
             </View>
           </View>
-          <Text style={styles.eyebrow}>SECURE PRODUCT CHECK</Text>
-          <Text style={styles.title}>Verifying product</Text>
-          <Text style={styles.subtitle}>This will only take a moment.</Text>
+          <Text style={styles.eyebrow}>{t.verifying.eyebrow}</Text>
+          <Text style={styles.title}>{t.verifying.title}</Text>
+          <Text style={styles.subtitle}>{t.verifying.subtitle}</Text>
         </View>
 
         {/* Progress steps */}

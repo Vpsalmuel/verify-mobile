@@ -28,7 +28,29 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Veryfy to use your camera to scan product codes and take photos for reports.",
+          "recordAudioAndroid": false,
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Veryfy to access your photos so you can add one to a product report.",
+          "cameraPermission": "Allow Veryfy to use your camera to take a photo for a product report.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Veryfy to use your location to record where you found a reported product."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

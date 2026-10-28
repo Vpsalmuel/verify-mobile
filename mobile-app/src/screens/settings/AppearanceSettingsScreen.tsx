@@ -10,21 +10,19 @@ import {
 } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { theme } from '../../theme';
+import { useI18n } from '../../i18n';
 
 interface AppearanceSettingsScreenProps {
   onBack: () => void;
 }
 
-const modes = [
-  { id: 'light', label: 'Light' },
-  { id: 'dark', label: 'Dark' },
-  { id: 'system', label: 'Use device setting' },
-];
+const modes = [{ id: 'light' }, { id: 'dark' }, { id: 'system' }] as const;
 
 export const AppearanceSettingsScreen: React.FC<AppearanceSettingsScreenProps> = ({
   onBack,
 }) => {
   const [selectedMode, setSelectedMode] = useState('light');
+  const { t } = useI18n();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -35,7 +33,7 @@ export const AppearanceSettingsScreen: React.FC<AppearanceSettingsScreenProps> =
           <TouchableOpacity style={styles.backBtn} onPress={onBack}>
             <ArrowLeft size={22} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Appearance</Text>
+          <Text style={styles.headerTitle}>{t.appearanceScreen.title}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -43,7 +41,7 @@ export const AppearanceSettingsScreen: React.FC<AppearanceSettingsScreenProps> =
           style={styles.scrollArea}
           contentContainerStyle={styles.scrollContent}
         >
-          <Text style={styles.subtitle}>Choose a display preference.</Text>
+          <Text style={styles.subtitle}>{t.appearanceScreen.subtitle}</Text>
 
           {/* Mode Options Cards */}
           <View style={styles.optionsList}>
@@ -59,7 +57,7 @@ export const AppearanceSettingsScreen: React.FC<AppearanceSettingsScreenProps> =
                   <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
                     {isSelected && <View style={styles.radioInner} />}
                   </View>
-                  <Text style={styles.optionLabel}>{item.label}</Text>
+                  <Text style={styles.optionLabel}>{t.appearanceScreen[item.id]}</Text>
                 </TouchableOpacity>
               );
             })}

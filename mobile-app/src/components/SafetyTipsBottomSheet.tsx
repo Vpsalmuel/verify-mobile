@@ -10,13 +10,7 @@ import {
   Image,
 } from 'react-native';
 import { theme } from '../theme';
-
-const tips = [
-  'Buy from trusted and traceable suppliers where possible.',
-  'Compare the packaging with the original, and look for unusual signs and missing details.',
-  'A low price can be a warning sign, but it doesn’t provide that a product is counterfeit.',
-  'Use Veryfy whenever a supported verification code is available.',
-];
+import { useI18n } from '../i18n';
 
 interface SafetyTipsBottomSheetProps {
   visible: boolean;
@@ -29,6 +23,7 @@ export const SafetyTipsBottomSheet: React.FC<SafetyTipsBottomSheetProps> = ({
   onClose,
   onScanPress,
 }) => {
+  const { t } = useI18n();
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -43,12 +38,12 @@ export const SafetyTipsBottomSheet: React.FC<SafetyTipsBottomSheetProps> = ({
 
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
             <View style={styles.header}>
-              <Text style={styles.title}>Stay safer when buying products</Text>
-              <Text style={styles.subtitle}>Simple signs can help you decide when to verify.</Text>
+              <Text style={styles.title}>{t.safetyTips.title}</Text>
+              <Text style={styles.subtitle}>{t.safetyTips.subtitle}</Text>
             </View>
 
             <View style={styles.tips}>
-              {tips.map((tip, index) => (
+              {t.safetyTips.tips.map((tip, index) => (
                 <View key={tip} style={styles.tipRow}>
                   <Text style={styles.tipNumber}>{String(index + 1).padStart(2, '0')}</Text>
                   <Text style={styles.tipText}>{tip}</Text>
@@ -59,7 +54,7 @@ export const SafetyTipsBottomSheet: React.FC<SafetyTipsBottomSheetProps> = ({
 
           <View style={styles.footer}>
             <TouchableOpacity style={styles.primaryButton} activeOpacity={0.85} onPress={onScanPress}>
-              <Text style={styles.primaryButtonText}>Scan a product</Text>
+              <Text style={styles.primaryButtonText}>{t.common.scanAProduct}</Text>
             </TouchableOpacity>
           </View>
         </View>

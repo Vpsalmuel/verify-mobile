@@ -1,126 +1,172 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   TextInput,
   Modal,
   Dimensions,
+  Linking,
+  ActivityIndicator,
 } from 'react-native';
-import {
-  ArrowLeft,
-  Flashlight,
-  FlashlightOff,
-  Keyboard,
-  X,
-  ScanLine,
-} from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
+import { ArrowLeft, Flashlight, FlashlightOff, Keyboard, X, Sparkles, Camera } from 'lucide-react-native';
 import { theme } from '../theme';
+import { useI18n } from '../i18n';
 
 interface ScanProductScreenProps {
   onBack: () => void;
   onCodeVerified: (code: string) => void;
 }
 
+const DEMO_CODE = 'VFY-2849-1036';
 const { width } = Dimensions.get('window');
-const SCAN_FRAME_SIZE = width * 0.72;
+const SCAN_FRAME_SIZE = Math.min(width * 0.68, 280);
 
-export const ScanProductScreen: React.FC<ScanProductScreenProps> = ({
-  onBack,
-  onCodeVerified,
-}) => {
+export const ScanProductScreen: React.FC<ScanProductScreenProps> = ({ onBack, onCodeVerified }) => {
+  const { t } = useI18n();
+  const [permission, requestPermission] = useCameraPermissions();
   const [torchOn, setTorchOn] = useState(false);
+  const [cameraFailed, setCameraFailed] = useState(false);
   const [manualModalVisible, setManualModalVisible] = useState(false);
   const [manualCode, setManualCode] = useState('');
+  // The camera fires many events per second; only the first code counts.
+  const handled = useRef(false);
+
+  const submit = (code: string) => {
+    if (handled.current) return;
+    handled.current = true;
+    onCodeVerified(code);
+  };
+
+  const handleBarcodeScanned = ({ data }: BarcodeScanningResult) => {
+    if (data?.trim()) submit(data.trim());
+  };
 
   const handleManualSubmit = () => {
     if (!manualCode.trim()) return;
     setManualModalVisible(false);
-    onCodeVerified(manualCode.trim());
+    submit(manualCode.trim());
   };
 
-  const handleSimulateScan = () => {
-    // Quick test helper triggering verification
-    onCodeVerified('VFY-2849-1036');
-  };
+  const cameraReady = permission?.granted && !cameraFailed;
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      {/* Camera Simulator Background (Deep dark viewfinder) */}
-      <View style={styles.cameraBackground}>
-        {/* Top Header Bar */}
-        <SafeAreaView style={styles.safeHeader}>
-          <View style={styles.headerRow}>
-            <TouchableOpacity
-              style={styles.circleIconButton}
-              activeOpacity={0.7}
-              onPress={onBack}
-            >
-              <ArrowLeft size={22} color={theme.colors.white} />
-            </TouchableOpacity>
+      {cameraReady && (
+        <CameraView
+          style={StyleSheet.absoluteFill}
+          facing="back"
+          enableTorch={torchOn}
+          barcodeScannerSettings={{
+            barcodeTypes: ['qr', 'datamatrix', 'ean13', 'ean8', 'upc_a', 'upc_e', 'code128', 'code39'],
+          }}
+          onBarcodeScanned={handleBarcodeScanned}
+          onMountError={() => setCameraFailed(true)}
+        />
+      )}
 
-            <Text style={styles.headerTitle}>Scan product</Text>
+      <SafeAreaView style={styles.overlay} edges={['top', 'bottom']}>
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            style={styles.circleIconButton}
+            activeOpacity={0.7}
+            onPress={onBack}
+            accessibilityRole="button"
+            accessibilityLabel={t.common.back}
+          >
+            <ArrowLeft size={22} color={theme.colors.white} />
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.circleIconButton}
-              activeOpacity={0.7}
-              onPress={() => setTorchOn(!torchOn)}
-            >
-              {torchOn ? (
-                <Flashlight size={22} color="#FBBF24" />
-              ) : (
-                <FlashlightOff size={22} color={theme.colors.white} />
-              )}
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-
-        {/* Viewfinder Target Section */}
-        <View style={styles.centerSection}>
-          <Text style={styles.instructionTitle}>Position the code</Text>
-          <Text style={styles.instructionSubtitle}>
-            Align the product code within the frame
-          </Text>
+          <Text style={styles.headerTitle}>{t.scan.title}</Text>
 
           <TouchableOpacity
-            style={styles.viewfinderFrame}
-            activeOpacity={0.9}
-            onPress={handleSimulateScan}
+            style={[styles.circleIconButton, !cameraReady && styles.hidden]}
+            activeOpacity={0.7}
+            disabled={!cameraReady}
+            onPress={() => setTorchOn(!torchOn)}
+            accessibilityRole="button"
+            accessibilityLabel={torchOn ? t.scan.torchOff : t.scan.torchOn}
           >
-            {/* Corner Markers */}
-            <View style={[styles.cornerMarker, styles.cornerTL]} />
-            <View style={[styles.cornerMarker, styles.cornerTR]} />
-            <View style={[styles.cornerMarker, styles.cornerBL]} />
-            <View style={[styles.cornerMarker, styles.cornerBR]} />
-
-            {/* Pulsing Scan Line Indicator */}
-            <View style={styles.scanTargetInner}>
-              <ScanLine size={48} color="rgba(255,255,255,0.4)" />
-              <Text style={styles.tapToSimulate}>Tap to scan mock code</Text>
-            </View>
+            {torchOn ? (
+              <Flashlight size={22} color="#FBBF24" />
+            ) : (
+              <FlashlightOff size={22} color={theme.colors.white} />
+            )}
           </TouchableOpacity>
         </View>
 
-        {/* Bottom Actions */}
-        <SafeAreaView style={styles.safeFooter}>
-          <View style={styles.footerContainer}>
-            <Text style={styles.cantScanText}>Can’t scan the code?</Text>
-            <TouchableOpacity
-              style={styles.manualEntryButton}
-              activeOpacity={0.8}
-              onPress={() => setManualModalVisible(true)}
-            >
-              <Keyboard size={18} color={theme.colors.white} />
-              <Text style={styles.manualEntryText}>Enter code manually</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </View>
+        {/* Demo shortcut */}
+        <TouchableOpacity
+          style={styles.demoButton}
+          activeOpacity={0.85}
+          onPress={() => submit(DEMO_CODE)}
+        >
+          <Sparkles size={16} color={theme.colors.primary} />
+          <Text style={styles.demoButtonText}>{t.scan.useDemoData}</Text>
+        </TouchableOpacity>
+
+        {/* Viewfinder or permission state */}
+        <View style={styles.centerSection}>
+          {!permission ? (
+            <ActivityIndicator color={theme.colors.white} />
+          ) : cameraReady ? (
+            <>
+              <Text style={styles.instructionTitle}>{t.scan.positionTitle}</Text>
+              <Text style={styles.instructionSubtitle}>{t.scan.positionSubtitle}</Text>
+              <View style={styles.viewfinderFrame}>
+                <View style={[styles.cornerMarker, styles.cornerTL]} />
+                <View style={[styles.cornerMarker, styles.cornerTR]} />
+                <View style={[styles.cornerMarker, styles.cornerBL]} />
+                <View style={[styles.cornerMarker, styles.cornerBR]} />
+                <View style={styles.scanLine} />
+              </View>
+            </>
+          ) : (
+            <View style={styles.permissionCard}>
+              <View style={styles.permissionIcon}>
+                <Camera size={28} color={theme.colors.white} />
+              </View>
+              <Text style={styles.instructionTitle}>{t.scan.cameraPermissionTitle}</Text>
+              <Text style={styles.permissionBody}>
+                {cameraFailed ? t.scan.cameraUnavailable : t.scan.cameraPermissionBody}
+              </Text>
+              {!cameraFailed && (
+                <TouchableOpacity
+                  style={styles.permissionButton}
+                  activeOpacity={0.85}
+                  onPress={() =>
+                    permission.canAskAgain ? requestPermission() : Linking.openSettings()
+                  }
+                >
+                  <Text style={styles.permissionButtonText}>
+                    {permission.canAskAgain ? t.scan.allowCamera : t.scan.openSettings}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </View>
+
+        {/* Manual entry */}
+        <View style={styles.footerContainer}>
+          <Text style={styles.cantScanText}>{t.scan.cantScan}</Text>
+          <TouchableOpacity
+            style={styles.manualEntryButton}
+            activeOpacity={0.8}
+            onPress={() => setManualModalVisible(true)}
+          >
+            <Keyboard size={18} color={theme.colors.white} />
+            <Text style={styles.manualEntryText}>{t.scan.enterManually}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
 
       {/* Manual Code Input Modal */}
       <Modal
@@ -132,18 +178,18 @@ export const ScanProductScreen: React.FC<ScanProductScreenProps> = ({
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Enter Uni-Code</Text>
+              <Text style={styles.modalTitle}>{t.scan.modalTitle}</Text>
               <TouchableOpacity
                 onPress={() => setManualModalVisible(false)}
                 style={styles.modalCloseBtn}
+                accessibilityRole="button"
+                accessibilityLabel={t.common.cancel}
               >
                 <X size={20} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalSubtitle}>
-              Type the code found on the product packaging label (e.g. VFY-2849-1036).
-            </Text>
+            <Text style={styles.modalSubtitle}>{t.scan.modalSubtitle}</Text>
 
             <TextInput
               style={styles.input}
@@ -153,6 +199,7 @@ export const ScanProductScreen: React.FC<ScanProductScreenProps> = ({
               autoFocus
               value={manualCode}
               onChangeText={setManualCode}
+              onSubmitEditing={handleManualSubmit}
             />
 
             <TouchableOpacity
@@ -163,7 +210,7 @@ export const ScanProductScreen: React.FC<ScanProductScreenProps> = ({
               disabled={!manualCode.trim()}
               onPress={handleManualSubmit}
             >
-              <Text style={styles.modalSubmitText}>Verify code</Text>
+              <Text style={styles.modalSubmitText}>{t.scan.verifyCode}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -175,15 +222,10 @@ export const ScanProductScreen: React.FC<ScanProductScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0A0A0A',
+    backgroundColor: '#000000',
   },
-  cameraBackground: {
+  overlay: {
     flex: 1,
-    backgroundColor: '#121316',
-    justifyContent: 'space-between',
-  },
-  safeHeader: {
-    backgroundColor: 'transparent',
   },
   headerRow: {
     flexDirection: 'row',
@@ -196,41 +238,58 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  hidden: {
+    opacity: 0,
   },
   headerTitle: {
     color: theme.colors.white,
-    fontSize: theme.typography.sizes.md,
+    fontSize: theme.typography.sizes.sm,
     fontWeight: theme.typography.weights.medium,
   },
+  demoButton: {
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: theme.spacing.md,
+    paddingHorizontal: theme.spacing.base,
+    height: 36,
+    borderRadius: theme.radius.full,
+    backgroundColor: theme.colors.white,
+  },
+  demoButtonText: {
+    color: theme.colors.primary,
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.semiBold,
+  },
   centerSection: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xl,
   },
   instructionTitle: {
     color: theme.colors.white,
     fontSize: theme.typography.sizes.lg,
-    fontWeight: theme.typography.weights.semiBold,
-    marginBottom: 4,
+    fontWeight: theme.typography.weights.medium,
     textAlign: 'center',
+    marginBottom: 6,
   },
   instructionSubtitle: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#D4D4D4',
     fontSize: theme.typography.sizes.sm,
-    marginBottom: theme.spacing.xl,
     textAlign: 'center',
+    marginBottom: theme.spacing.xl,
   },
   viewfinderFrame: {
     width: SCAN_FRAME_SIZE,
     height: SCAN_FRAME_SIZE,
-    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 24,
   },
   cornerMarker: {
     position: 'absolute',
@@ -266,22 +325,49 @@ const styles = StyleSheet.create({
     borderRightWidth: 3,
     borderBottomRightRadius: 16,
   },
-  scanTargetInner: {
+  scanLine: {
+    width: SCAN_FRAME_SIZE - 40,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: theme.colors.white,
+  },
+  permissionCard: {
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  permissionIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    marginBottom: theme.spacing.sm,
   },
-  tapToSimulate: {
-    color: 'rgba(255, 255, 255, 0.5)',
-    fontSize: theme.typography.sizes.xs,
+  permissionBody: {
+    color: '#D4D4D4',
+    fontSize: theme.typography.sizes.sm,
+    lineHeight: theme.typography.lineHeights.sm,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
   },
-  safeFooter: {
-    backgroundColor: 'transparent',
+  permissionButton: {
+    height: 48,
+    paddingHorizontal: theme.spacing.xl,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  permissionButtonText: {
+    color: theme.colors.white,
+    fontSize: theme.typography.sizes.md,
+    fontWeight: theme.typography.weights.medium,
   },
   footerContainer: {
     alignItems: 'center',
     paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl,
+    paddingBottom: theme.spacing.lg,
   },
   cantScanText: {
     color: 'rgba(255, 255, 255, 0.8)',

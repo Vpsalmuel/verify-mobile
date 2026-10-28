@@ -10,23 +10,18 @@ import {
 } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { theme } from '../../theme';
+import { LanguageCode, languages, useI18n } from '../../i18n';
 
 interface LanguageSettingsScreenProps {
   onBack: () => void;
 }
 
-const languages = [
-  { id: 'en', label: 'English' },
-  { id: 'pcm', label: 'Nigerian Pidgin' },
-  { id: 'yo', label: 'Yorùbá' },
-  { id: 'ha', label: 'Hausa' },
-  { id: 'ig', label: 'Igbo' },
-];
 
 export const LanguageSettingsScreen: React.FC<LanguageSettingsScreenProps> = ({
   onBack,
 }) => {
-  const [selectedLang, setSelectedLang] = useState('en');
+  const { t, language, setLanguage } = useI18n();
+  const [selectedLang, setSelectedLang] = useState<LanguageCode>(language);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -37,7 +32,7 @@ export const LanguageSettingsScreen: React.FC<LanguageSettingsScreenProps> = ({
           <TouchableOpacity style={styles.backBtn} onPress={onBack}>
             <ArrowLeft size={22} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Language</Text>
+          <Text style={styles.headerTitle}>{t.languageScreen.title}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -45,23 +40,23 @@ export const LanguageSettingsScreen: React.FC<LanguageSettingsScreenProps> = ({
           style={styles.scrollArea}
           contentContainerStyle={styles.scrollContent}
         >
-          <Text style={styles.subtitle}>Choose your preferred language.</Text>
+          <Text style={styles.subtitle}>{t.languageScreen.subtitle}</Text>
 
           {/* Language Options Cards */}
           <View style={styles.optionsList}>
             {languages.map((item) => {
-              const isSelected = selectedLang === item.id;
+              const isSelected = selectedLang === item.code;
               return (
                 <TouchableOpacity
-                  key={item.id}
+                  key={item.code}
                   style={styles.optionCard}
                   activeOpacity={0.7}
-                  onPress={() => setSelectedLang(item.id)}
+                  onPress={() => setSelectedLang(item.code)}
                 >
                   <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
                     {isSelected && <View style={styles.radioInner} />}
                   </View>
-                  <Text style={styles.optionLabel}>{item.label}</Text>
+                  <Text style={styles.optionLabel}>{item.nativeName}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -73,9 +68,12 @@ export const LanguageSettingsScreen: React.FC<LanguageSettingsScreenProps> = ({
           <TouchableOpacity
             style={styles.saveBtn}
             activeOpacity={0.85}
-            onPress={onBack}
+            onPress={() => {
+              setLanguage(selectedLang);
+              onBack();
+            }}
           >
-            <Text style={styles.saveBtnText}>Save language</Text>
+            <Text style={styles.saveBtnText}>{t.languageScreen.save}</Text>
           </TouchableOpacity>
         </View>
       </View>

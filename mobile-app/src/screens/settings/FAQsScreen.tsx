@@ -10,51 +10,14 @@ import {
 } from 'react-native';
 import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { theme } from '../../theme';
-
-interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
-}
-
-const faqList: FAQItem[] = [
-  {
-    id: '1',
-    question: 'How do I verify a product?',
-    answer:
-      'Scan the supported code on the packaging or enter it manually, then review the available product information.',
-  },
-  {
-    id: '2',
-    question: 'What does VERIFIED mean?',
-    answer:
-      'A Verified result means the Uni-Code matches a registered manufacturer batch with no duplicate or suspicious activity detected.',
-  },
-  {
-    id: '3',
-    question: 'What does SUSPICIOUS mean?',
-    answer:
-      'Suspicious indicates potential anomalies such as multiple scans across distant geographic regions in a short time frame.',
-  },
-  {
-    id: '4',
-    question: 'What does NOT VERIFIED mean?',
-    answer:
-      'Not Verified means the code is not recognized in manufacturer records or the scan was incomplete. Double check spelling or try scanning again.',
-  },
-  {
-    id: '5',
-    question: 'How do I report a product?',
-    answer:
-      'If your verification result returns suspicious or invalid, tap "Report this product" to submit details directly to review authorities.',
-  },
-];
+import { useI18n } from '../../i18n';
 
 interface FAQsScreenProps {
   onBack: () => void;
 }
 
 export const FAQsScreen: React.FC<FAQsScreenProps> = ({ onBack }) => {
+  const { t } = useI18n();
   const [expandedId, setExpandedId] = useState<string | null>('1');
 
   const toggleExpand = (id: string) => {
@@ -70,7 +33,7 @@ export const FAQsScreen: React.FC<FAQsScreenProps> = ({ onBack }) => {
           <TouchableOpacity style={styles.backBtn} onPress={onBack}>
             <ArrowLeft size={22} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>FAQs</Text>
+          <Text style={styles.headerTitle}>{t.faqsScreen.title}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -79,12 +42,11 @@ export const FAQsScreen: React.FC<FAQsScreenProps> = ({ onBack }) => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.subtitle}>
-            Understand checks, results and safer next steps.
-          </Text>
+          <Text style={styles.subtitle}>{t.faqsScreen.subtitle}</Text>
 
           <View style={styles.accordionContainer}>
-            {faqList.map((item) => {
+            {t.faqsScreen.items.map((faq, index) => {
+              const item = { ...faq, id: String(index + 1) };
               const isOpen = expandedId === item.id;
               return (
                 <View key={item.id} style={styles.itemWrapper}>

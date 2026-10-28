@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import { theme } from '../../theme';
+import { useI18n } from '../../i18n';
 
 export type SettingsSubScreen =
   | 'language'
@@ -35,6 +36,7 @@ interface SettingsMainScreenProps {
 export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
   onNavigateSub,
 }) => {
+  const { t } = useI18n();
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
@@ -46,8 +48,8 @@ export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Settings</Text>
-            <Text style={styles.subtitle}>Manage your app preferences</Text>
+            <Text style={styles.title}>{t.settings.title}</Text>
+            <Text style={styles.subtitle}>{t.settings.subtitle}</Text>
           </View>
 
           {/* Individual Rounded Cards */}
@@ -60,7 +62,7 @@ export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
             >
               <View style={styles.cardLeft}>
                 <Flag size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.cardLabel}>Language</Text>
+                <Text style={styles.cardLabel}>{t.settings.language}</Text>
               </View>
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>
@@ -73,7 +75,7 @@ export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
             >
               <View style={styles.cardLeft}>
                 <Bell size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.cardLabel}>Notifications</Text>
+                <Text style={styles.cardLabel}>{t.settings.notifications}</Text>
               </View>
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>
@@ -86,7 +88,7 @@ export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
             >
               <View style={styles.cardLeft}>
                 <HelpCircle size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.cardLabel}>FAQs</Text>
+                <Text style={styles.cardLabel}>{t.settings.faqs}</Text>
               </View>
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>
@@ -99,7 +101,7 @@ export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
             >
               <View style={styles.cardLeft}>
                 <FileText size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.cardLabel}>Terms of use</Text>
+                <Text style={styles.cardLabel}>{t.settings.termsOfUse}</Text>
               </View>
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>
@@ -112,7 +114,7 @@ export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
             >
               <View style={styles.cardLeft}>
                 <ShieldCheck size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.cardLabel}>Privacy policy</Text>
+                <Text style={styles.cardLabel}>{t.settings.privacyPolicy}</Text>
               </View>
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>
@@ -120,7 +122,7 @@ export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
 
           {/* Subtle Footer Caption */}
           <View style={styles.footerSpacing}>
-            <Text style={styles.footerNote}>Veryfy version 1.0 · Made for Nigeria</Text>
+            <Text style={styles.footerNote}>{t.settings.footer}</Text>
           </View>
         </ScrollView>
       </View>
