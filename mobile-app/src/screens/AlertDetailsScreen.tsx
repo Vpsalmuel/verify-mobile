@@ -12,22 +12,18 @@ import {
 } from 'react-native';
 import { ArrowLeft, Package, Info } from 'lucide-react-native';
 import { theme } from '../theme';
+import { useI18n } from '../i18n';
 
 interface AlertDetailsScreenProps {
   onBack: () => void;
   brandName?: string;
-  category?: string;
-  title?: string;
-  description?: string;
 }
 
 export const AlertDetailsScreen: React.FC<AlertDetailsScreenProps> = ({
   onBack,
   brandName = 'VitaCore',
-  category = 'Product Authentication',
-  title = 'What you need to know',
-  description = 'Some product codes associated with a limited set of VitaCore Paracetamol batches require additional verification.',
 }) => {
+  const { t } = useI18n();
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
@@ -37,7 +33,7 @@ export const AlertDetailsScreen: React.FC<AlertDetailsScreenProps> = ({
           <TouchableOpacity style={styles.backBtn} activeOpacity={0.7} onPress={onBack}>
             <ArrowLeft size={22} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Alert details</Text>
+          <Text style={styles.headerTitle}>{t.alertDetails.title}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -68,40 +64,34 @@ export const AlertDetailsScreen: React.FC<AlertDetailsScreenProps> = ({
             </View>
             <View style={styles.brandTextStack}>
               <Text style={styles.brandName}>{brandName}</Text>
-              <Text style={styles.brandCategory}>{category}</Text>
+              <Text style={styles.brandCategory}>{t.alertDetails.category}</Text>
             </View>
           </View>
 
           {/* Section: What you need to know */}
           <View style={styles.section}>
-            <Text style={styles.sectionHeading}>{title}</Text>
-            <Text style={styles.sectionBody}>{description}</Text>
+            <Text style={styles.sectionHeading}>{t.alertDetails.whatYouNeedToKnow}</Text>
+            <Text style={styles.sectionBody}>{t.alertDetails.description}</Text>
           </View>
 
           {/* Section: What to do next */}
           <View style={styles.section}>
-            <Text style={styles.sectionHeading}>What to do next</Text>
+            <Text style={styles.sectionHeading}>{t.alertDetails.whatToDoNext}</Text>
 
             <View style={styles.stepsList}>
               <View style={styles.stepItem}>
                 <Text style={styles.stepNumber}>01</Text>
-                <Text style={styles.stepText}>
-                  Scan the verification code on the package.
-                </Text>
+                <Text style={styles.stepText}>{t.alertDetails.steps[0]}</Text>
               </View>
 
               <View style={styles.stepItem}>
                 <Text style={styles.stepNumber}>02</Text>
-                <Text style={styles.stepText}>
-                  Review the result and product details.
-                </Text>
+                <Text style={styles.stepText}>{t.alertDetails.steps[1]}</Text>
               </View>
 
               <View style={styles.stepItem}>
                 <Text style={styles.stepNumber}>03</Text>
-                <Text style={styles.stepText}>
-                  Report the product if details don’t match.
-                </Text>
+                <Text style={styles.stepText}>{t.alertDetails.steps[2]}</Text>
               </View>
             </View>
           </View>
@@ -109,9 +99,7 @@ export const AlertDetailsScreen: React.FC<AlertDetailsScreenProps> = ({
           {/* Disclaimer / Notice Box */}
           <View style={styles.noticeBox}>
             <Info size={20} color={theme.colors.textSecondary} style={{ marginTop: 2 }} />
-            <Text style={styles.noticeText}>
-              This notice does not mean every VitaCore product is counterfeit. Check the code on your specific product.
-            </Text>
+            <Text style={styles.noticeText}>{t.alertDetails.notice}</Text>
           </View>
         </ScrollView>
       </View>

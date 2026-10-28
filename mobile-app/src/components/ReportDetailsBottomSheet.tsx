@@ -7,98 +7,57 @@ import {
   ScrollView,
   Modal,
   Image,
-  Dimensions,
+  Pressable,
 } from 'react-native';
 import { X, Clock, CheckCircle2 } from 'lucide-react-native';
 import { theme } from '../theme';
-
-export type ReportStatusType = 'under_review' | 'reviewed';
-export type ReviewOutcomeType = 'mismatch' | 'no_issues' | 'in_progress';
-
-export interface ReportDetailsData {
-  reportId: string;
-  productName: string;
-  submittedDate: string;
-  status: ReportStatusType;
-  outcomeType?: ReviewOutcomeType;
-  reason: string;
-  category: string;
-  verificationResult: string;
-  imageSource?: any;
-  findingTitle?: string;
-  findingDescription?: string;
-}
+import { useI18n } from '../i18n';
+import { ReportRecord, formatReportDate } from '../state/reports';
 
 interface ReportDetailsBottomSheetProps {
   visible: boolean;
   onClose: () => void;
-  data?: ReportDetailsData;
+  report: ReportRecord | null;
 }
 
-const defaultReportData: ReportDetailsData = {
-  reportId: 'VFY-346D4',
-  productName: 'PureGlow Face Cream',
-  submittedDate: 'Submitted 12 June 2025',
-  status: 'under_review',
-  outcomeType: 'in_progress',
-  reason: 'Product source is unclear',
-  category: 'Cosmetics',
-  verificationResult: 'Under review',
-  findingTitle: 'Review in progress',
-  findingDescription:
-    'Our review team will assess the available product information. We’ll update this report when the review is complete.',
+const outcomeTones = {
+  in_progress: { bg: '#FFFBEB', border: '#FDE68A', title: '#92400E' },
+  no_issues: { bg: '#F0FDF4', border: '#BBF7D0', title: '#166534' },
+  mismatch: { bg: '#FEF2F2', border: '#FECACA', title: '#991B1B' },
 };
 
 export const ReportDetailsBottomSheet: React.FC<ReportDetailsBottomSheetProps> = ({
   visible,
   onClose,
-  data = defaultReportData,
+  report,
 }) => {
-  const isReviewed = data.status === 'reviewed';
-  const isNoIssues = data.outcomeType === 'no_issues';
+  const { t } = useI18n();
+  if (!report) return null;
 
-  // Determine finding card styling
-  let cardBg = '#FFFBEB';
-  let cardBorder = '#FDE68A';
-  let titleColor = '#92400E';
-  let defaultTitle = 'Review in progress';
-  let defaultDesc =
-    'Our review team will assess the available product information. We’ll update this report when the review is complete.';
-
-  if (isReviewed) {
-    if (isNoIssues) {
-      cardBg = '#F0FDF4';
-      cardBorder = '#BBF7D0';
-      titleColor = '#166534';
-      defaultTitle = 'No issues found';
-      defaultDesc =
-        'Our review did not identify any suspicious activity or mismatches in the available product information.';
-    } else {
-      cardBg = '#FEF2F2';
-      cardBorder = '#FECACA';
-      titleColor = '#991B1B';
-      defaultTitle = 'Source mismatch detected';
-      defaultDesc =
-        'The product’s source does not match NAFDAC and manufacturer records. Authenticity could not be verified.';
-    }
-  }
+  const isReviewed = report.status === 'reviewed';
+  const tone = outcomeTones[report.outcome];
+  const outcomeText = {
+    in_progress: [t.reports.outcomes.inProgressTitle, t.reports.outcomes.inProgressDescription],
+    no_issues: [t.reports.outcomes.noIssuesTitle, t.reports.outcomes.noIssuesDescription],
+    mismatch: [t.reports.outcomes.mismatchTitle, t.reports.outcomes.mismatchDescription],
+  }[report.outcome];
+  const location = [report.storeName, report.address].filter(Boolean).join(' · ');
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
       <View style={styles.backdrop}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         <View style={styles.sheetContainer}>
-          {/* Drag Handle & Close X */}
+          {/* Header: drag handle centred, close button on its own row space */}
           <View style={styles.topHandleBar}>
             <View style={styles.dragHandle} />
             <TouchableOpacity
               style={styles.closeBtn}
               activeOpacity={0.7}
               onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel={t.common.cancel}
+              hitSlop={8}
             >
               <X size={20} color={theme.colors.textPrimary} />
             </TouchableOpacity>
@@ -111,7 +70,6 @@ export const ReportDetailsBottomSheet: React.FC<ReportDetailsBottomSheetProps> =
           >
             {/* Product Image Frame */}
             <View style={styles.imageCard}>
-              {/* Badge Pill on top-left of image */}
               <View
                 style={[
                   styles.imageBadgePill,
@@ -126,18 +84,19 @@ export const ReportDetailsBottomSheet: React.FC<ReportDetailsBottomSheetProps> =
                 <Text
                   style={[
                     styles.imageBadgeText,
-                    isReviewed
-                      ? { color: theme.colors.verifiedText }
-                      : { color: theme.colors.notVerifiedBorder },
+                    { color: isReviewed ? theme.colors.verifiedText : theme.colors.notVerifiedBorder },
                   ]}
                 >
-                  {isReviewed ? 'Reviewed' : 'Under review'}
+                  {isReviewed ? t.status.reviewed : t.status.underReview}
                 </Text>
               </View>
 
-              {/* Product Visual */}
               <Image
-                source={data.imageSource || require('../assets/product-voltarol.png')}
+                source={
+                  report.photoUri
+                    ? { uri: report.photoUri }
+                    : require('../assets/product-voltarol.png')
+                }
                 style={styles.productImage}
                 resizeMode="cover"
               />
@@ -145,43 +104,52 @@ export const ReportDetailsBottomSheet: React.FC<ReportDetailsBottomSheetProps> =
 
             {/* Product Title Header */}
             <View style={styles.productHeader}>
-              <Text style={styles.productTitle}>{data.productName}</Text>
-              <Text style={styles.submittedDate}>{data.submittedDate}</Text>
+              <Text style={styles.productTitle}>{report.productName}</Text>
+              <Text style={styles.submittedDate}>
+                {t.reports.submitted(formatReportDate(report.submittedAt))}
+              </Text>
               <Text style={styles.reportIdSub}>
-                Report ID: <Text style={styles.reportIdValue}>{data.reportId}</Text>
+                {t.reports.reportId} <Text style={styles.reportIdValue}>{report.reportId}</Text>
               </Text>
             </View>
 
             {/* Finding / Status Box */}
-            <View
-              style={[
-                styles.findingCard,
-                { backgroundColor: cardBg, borderColor: cardBorder },
-              ]}
-            >
-              <Text style={[styles.findingTitle, { color: titleColor }]}>
-                {data.findingTitle || defaultTitle}
-              </Text>
-              <Text style={styles.findingDescription}>
-                {data.findingDescription || defaultDesc}
-              </Text>
+            <View style={[styles.findingCard, { backgroundColor: tone.bg, borderColor: tone.border }]}>
+              <Text style={[styles.findingTitle, { color: tone.title }]}>{outcomeText[0]}</Text>
+              <Text style={styles.findingDescription}>{outcomeText[1]}</Text>
             </View>
 
             <View style={styles.divider} />
 
             {/* Report Summary Details */}
             <View style={styles.summarySection}>
-              <Text style={styles.summaryHeading}>Report summary</Text>
+              <Text style={styles.summaryHeading}>{t.reports.summary}</Text>
 
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Report reason</Text>
-                <Text style={styles.summaryValue}>{data.reason}</Text>
+                <Text style={styles.summaryLabel}>{t.reports.reason}</Text>
+                <Text style={styles.summaryValue}>{t.reportForm.issues[report.issue]}</Text>
               </View>
 
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Product category</Text>
-                <Text style={styles.summaryValue}>{data.category}</Text>
+                <Text style={styles.summaryLabel}>{t.reports.category}</Text>
+                <Text style={styles.summaryValue}>
+                  {report.category ? t.reports.cosmetics : t.reports.notSpecified}
+                </Text>
               </View>
+
+              {location ? (
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>{t.reports.location}</Text>
+                  <Text style={styles.summaryValue}>{location}</Text>
+                </View>
+              ) : null}
+
+              {report.details ? (
+                <View style={styles.summaryBlock}>
+                  <Text style={styles.summaryLabel}>{t.reports.details}</Text>
+                  <Text style={styles.summaryBlockText}>{report.details}</Text>
+                </View>
+              ) : null}
             </View>
           </ScrollView>
         </View>
@@ -204,15 +172,11 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.lg,
   },
   topHandleBar: {
-    paddingTop: 10,
-    paddingBottom: 4,
-    paddingHorizontal: theme.spacing.lg,
-    flexDirection: 'row',
+    height: 52,
     alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
   },
   dragHandle: {
+    marginTop: 8,
     width: 38,
     height: 4,
     backgroundColor: '#D1D5DB',
@@ -220,16 +184,21 @@ const styles = StyleSheet.create({
   },
   closeBtn: {
     position: 'absolute',
-    right: 20,
+    right: theme.spacing.base,
     top: 10,
-    padding: 4,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scrollArea: {
     flexGrow: 0,
   },
   scrollContent: {
     paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.sm,
+    paddingTop: 0,
     paddingBottom: theme.spacing.xxl,
   },
   imageCard: {
@@ -336,5 +305,16 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.weights.medium,
     color: theme.colors.textPrimary,
     textAlign: 'right',
+    flexShrink: 1,
+    marginLeft: theme.spacing.base,
+  },
+  summaryBlock: {
+    gap: 4,
+    marginTop: theme.spacing.sm,
+  },
+  summaryBlockText: {
+    fontSize: theme.typography.sizes.sm,
+    color: theme.colors.textPrimary,
+    lineHeight: theme.typography.lineHeights.sm,
   },
 });

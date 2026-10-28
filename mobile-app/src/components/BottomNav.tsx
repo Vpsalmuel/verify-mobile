@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Home, FileText, QrCode, Bell, Settings } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../theme';
+import { useI18n } from '../i18n';
 
 export type TabKey = 'home' | 'reports' | 'scan' | 'alerts' | 'settings';
 
@@ -16,8 +18,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onTabPress,
   onScanPress,
 }) => {
+  const insets = useSafeAreaInsets();
+  const { t } = useI18n();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { height: 72 + insets.bottom, paddingBottom: 8 + insets.bottom }]}>
       {/* Home Tab */}
       <TouchableOpacity
         style={styles.tabItem}
@@ -34,7 +39,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             activeTab === 'home' ? styles.tabLabelActive : styles.tabLabelInactive,
           ]}
         >
-          Home
+          {t.tabs.home}
         </Text>
       </TouchableOpacity>
 
@@ -54,23 +59,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             activeTab === 'reports' ? styles.tabLabelActive : styles.tabLabelInactive,
           ]}
         >
-          Reports
+          {t.tabs.reports}
         </Text>
       </TouchableOpacity>
 
       {/* Center Scan FAB */}
-      <View style={styles.fabWrapper}>
-        <TouchableOpacity
-          style={styles.fabButton}
-          activeOpacity={0.85}
-          onPress={onScanPress}
-        >
+      <TouchableOpacity style={styles.fabWrapper} activeOpacity={0.85} onPress={onScanPress}>
+        <View style={styles.fabButton}>
           <QrCode size={24} color={theme.colors.white} />
-        </TouchableOpacity>
+        </View>
         <Text style={[styles.tabLabel, styles.tabLabelInactive, { marginTop: 4 }]}>
-          Scan
+          {t.tabs.scan}
         </Text>
-      </View>
+      </TouchableOpacity>
 
       {/* Alerts Tab */}
       <TouchableOpacity
@@ -88,7 +89,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             activeTab === 'alerts' ? styles.tabLabelActive : styles.tabLabelInactive,
           ]}
         >
-          Alerts
+          {t.tabs.alerts}
         </Text>
       </TouchableOpacity>
 
@@ -108,7 +109,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             activeTab === 'settings' ? styles.tabLabelActive : styles.tabLabelInactive,
           ]}
         >
-          Settings
+          {t.tabs.settings}
         </Text>
       </TouchableOpacity>
     </View>

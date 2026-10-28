@@ -9,91 +9,28 @@ import {
   StatusBar,
   Platform,
 } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRight, Clock, CheckCircle2 } from 'lucide-react-native';
 import { theme } from '../theme';
-import { BottomNav, TabKey } from '../components/BottomNav';
-import {
-  ReportDetailsBottomSheet,
-  ReportDetailsData,
-} from '../components/ReportDetailsBottomSheet';
+import { ReportDetailsBottomSheet } from '../components/ReportDetailsBottomSheet';
+import { FilterChips } from '../components/FilterChips';
+import { useI18n } from '../i18n';
+import { ReportRecord, ReportStatus, formatReportDate, useReports } from '../state/reports';
 
-type ReportFilter = 'all' | 'under_review' | 'reviewed';
-
-interface ReportItem {
-  id: string;
-  reportId: string;
-  name: string;
-  meta: string;
-  status: 'under_review' | 'reviewed';
-  reason: string;
-  category: string;
-  verificationResult: string;
-  findingTitle?: string;
-  findingDescription?: string;
-}
-
-const mockReports: ReportItem[] = [
-  {
-    id: '1',
-    reportId: 'VFY-346D4',
-    name: 'PureGlow Face Cream',
-    meta: 'Source unclear · 12 Jun',
-    status: 'under_review',
-    reason: 'Product source is unclear',
-    category: 'Cosmetics',
-    verificationResult: 'Under review',
-    findingTitle: 'Review in progress',
-    findingDescription:
-      'Our review team will assess the available product information. We’ll update this report when the review is complete.',
-  },
-  {
-    id: '2',
-    reportId: 'VFY-346D4',
-    name: 'PureGlow Face Cream',
-    meta: 'Source unclear · 12 Jun',
-    status: 'reviewed',
-    reason: 'Product source mismatch',
-    category: 'Cosmetics',
-    verificationResult: 'Could not be verified',
-    findingTitle: 'Source mismatch detected',
-    findingDescription:
-      'The product’s source does not match NAFDAC and manufacturer records. Authenticity could not be verified.',
-  },
-  {
-    id: '3',
-    reportId: 'VFY-346D4',
-    name: 'PureGlow Face Cream',
-    meta: 'Source unclear · 12 Jun',
-    status: 'reviewed',
-    reason: 'Product authenticity concern',
-    category: 'Cosmetics',
-    verificationResult: 'No issues found',
-    findingTitle: 'No issues found',
-    findingDescription:
-      'Our review did not identify any suspicious activity or mismatches in the available product information.',
-  },
-];
+type ReportFilter = 'all' | ReportStatus;
 
 interface ReportsScreenProps {
-  activeTab: TabKey;
-  onTabPress: (tab: TabKey) => void;
-  onScanPress: () => void;
   onReportAProductPress: () => void;
 }
 
-export const ReportsScreen: React.FC<ReportsScreenProps> = ({
-  activeTab,
-  onTabPress,
-  onScanPress,
-  onReportAProductPress,
-}) => {
+export const ReportsScreen: React.FC<ReportsScreenProps> = ({ onReportAProductPress }) => {
+  const { t } = useI18n();
+  const { reports } = useReports();
   const [activeFilter, setActiveFilter] = useState<ReportFilter>('all');
-  const [selectedReport, setSelectedReport] = useState<ReportDetailsData | null>(null);
+  const [selectedReport, setSelectedReport] = useState<ReportRecord | null>(null);
 
-  const filteredReports = mockReports.filter((item) => {
-    if (activeFilter === 'all') return true;
-    return item.status === activeFilter;
-  });
+  const filteredReports = reports.filter(
+    (item) => activeFilter === 'all' || item.status === activeFilter
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -106,62 +43,20 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>My Reports</Text>
-            <Text style={styles.subtitle}>Follow the reports you’ve sent to Veryfy.</Text>
+            <Text style={styles.title}>{t.reports.title}</Text>
+            <Text style={styles.subtitle}>{t.reports.subtitle}</Text>
           </View>
 
-          {/* Filter Pills */}
           <View style={styles.filterRow}>
-            <TouchableOpacity
-              style={[styles.filterPill, activeFilter === 'all' && styles.filterPillActive]}
-              activeOpacity={0.7}
-              onPress={() => setActiveFilter('all')}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  activeFilter === 'all' && styles.filterTextActive,
-                ]}
-              >
-                All
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.filterPill,
-                activeFilter === 'under_review' && styles.filterPillActive,
+            <FilterChips
+              options={[
+                { key: 'all', label: t.reports.all },
+                { key: 'under_review', label: t.status.underReview },
+                { key: 'reviewed', label: t.status.reviewed },
               ]}
-              activeOpacity={0.7}
-              onPress={() => setActiveFilter('under_review')}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  activeFilter === 'under_review' && styles.filterTextActive,
-                ]}
-              >
-                Under review
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.filterPill,
-                activeFilter === 'reviewed' && styles.filterPillActive,
-              ]}
-              activeOpacity={0.7}
-              onPress={() => setActiveFilter('reviewed')}
-            >
-              <Text
-                style={[
-                  styles.filterText,
-                  activeFilter === 'reviewed' && styles.filterTextActive,
-                ]}
-              >
-                Reviewed
-              </Text>
-            </TouchableOpacity>
+              value={activeFilter}
+              onChange={setActiveFilter}
+            />
           </View>
 
           {/* Reports Card List */}
@@ -171,42 +66,27 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
                 key={item.id}
                 style={styles.reportCard}
                 activeOpacity={0.7}
-                onPress={() => {
-                  let outcomeType: 'mismatch' | 'no_issues' | 'in_progress' = 'in_progress';
-
-                  if (item.id === '2') {
-                    outcomeType = 'mismatch';
-                  } else if (item.id === '3') {
-                    outcomeType = 'no_issues';
-                  }
-
-                  setSelectedReport({
-                    reportId: item.reportId,
-                    productName: item.name,
-                    submittedDate: 'Submitted 12 June 2025',
-                    status: item.status,
-                    outcomeType: outcomeType,
-                    reason: item.reason,
-                    category: item.category,
-                    verificationResult: item.verificationResult,
-                    findingTitle: item.findingTitle,
-                    findingDescription: item.findingDescription,
-                  });
-                }}
+                onPress={() => setSelectedReport(item)}
               >
                 <View style={styles.reportCardLeft}>
-                  <Text style={styles.reportItemName}>{item.name}</Text>
-                  <Text style={styles.reportItemMeta}>{item.meta}</Text>
+                  <Text style={styles.reportItemName} numberOfLines={1}>
+                    {item.productName}
+                  </Text>
+                  <Text style={styles.reportItemMeta} numberOfLines={1}>
+                    {t.reportForm.issues[item.issue]} · {formatReportDate(item.submittedAt, 'short')}
+                  </Text>
                 </View>
 
                 <View style={styles.reportCardRight}>
                   {item.status === 'under_review' ? (
                     <View style={styles.badgeUnderReview}>
-                      <Text style={styles.badgeUnderReviewText}>⏱ Under review</Text>
+                      <Clock size={12} color="#92400E" />
+                      <Text style={styles.badgeUnderReviewText}>{t.status.underReview}</Text>
                     </View>
                   ) : (
                     <View style={styles.badgeReviewed}>
-                      <Text style={styles.badgeReviewedText}>✔ Reviewed</Text>
+                      <CheckCircle2 size={12} color="#010B4F" />
+                      <Text style={styles.badgeReviewedText}>{t.status.reviewed}</Text>
                     </View>
                   )}
                   <ChevronRight size={18} color={theme.colors.textTertiary} />
@@ -221,22 +101,14 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
             activeOpacity={0.85}
             onPress={onReportAProductPress}
           >
-            <Text style={styles.reportButtonText}>Report a Product</Text>
+            <Text style={styles.reportButtonText}>{t.common.reportAProduct}</Text>
           </TouchableOpacity>
         </ScrollView>
 
-        {/* Bottom Navigation */}
-        <BottomNav
-          activeTab={activeTab}
-          onTabPress={onTabPress}
-          onScanPress={onScanPress}
-        />
-
-        {/* Report Details Bottom Sheet */}
         <ReportDetailsBottomSheet
           visible={selectedReport !== null}
           onClose={() => setSelectedReport(null)}
-          data={selectedReport || undefined}
+          report={selectedReport}
         />
       </View>
     </SafeAreaView>
@@ -275,30 +147,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   filterRow: {
-    flexDirection: 'row',
-    gap: 8,
     marginBottom: theme.spacing.xl,
-  },
-  filterPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: theme.radius.full,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-  },
-  filterPillActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#EFF6FF',
-  },
-  filterText: {
-    fontSize: theme.typography.sizes.xs,
-    color: theme.colors.textSecondary,
-    fontWeight: theme.typography.weights.medium,
-  },
-  filterTextActive: {
-    color: theme.colors.primary,
-    fontWeight: theme.typography.weights.semiBold,
   },
   listContainer: {
     gap: theme.spacing.md,
@@ -335,6 +184,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   badgeUnderReview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     backgroundColor: '#FFFBEB',
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -346,6 +198,9 @@ const styles = StyleSheet.create({
     fontWeight: theme.typography.weights.medium,
   },
   badgeReviewed: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     backgroundColor: '#DCFCE7',
     paddingHorizontal: 8,
     paddingVertical: 4,

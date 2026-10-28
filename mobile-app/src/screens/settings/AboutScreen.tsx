@@ -10,12 +10,14 @@ import {
 } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { theme } from '../../theme';
+import { useI18n } from '../../i18n';
 
 interface AboutScreenProps {
   onBack: () => void;
 }
 
 export const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
+  const { t } = useI18n();
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
@@ -25,7 +27,7 @@ export const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
           <TouchableOpacity style={styles.backBtn} onPress={onBack}>
             <ArrowLeft size={22} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>About VERYFY</Text>
+          <Text style={styles.headerTitle}>{t.aboutScreen.title}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -34,30 +36,27 @@ export const AboutScreen: React.FC<AboutScreenProps> = ({ onBack }) => {
           contentContainerStyle={styles.scrollContent}
         >
           {/* Mission description paragraph */}
-          <Text style={styles.description}>
-            VERYFY helps consumers and retailers check available product information,
-            understand verification results, and report suspicious products.
-          </Text>
+          <Text style={styles.description}>{t.aboutScreen.body}</Text>
 
           {/* Details Table */}
           <View style={styles.tableCard}>
             <View style={styles.row}>
-              <Text style={styles.label}>Version</Text>
-              <Text style={styles.value}>1.0 prototype</Text>
+              <Text style={styles.label}>{t.aboutScreen.version}</Text>
+              <Text style={styles.value}>{t.aboutScreen.versionValue}</Text>
             </View>
 
             <View style={styles.divider} />
 
             <View style={styles.row}>
-              <Text style={styles.label}>Support</Text>
+              <Text style={styles.label}>{t.aboutScreen.support}</Text>
               <Text style={styles.valueHighlight}>support@veryfy.example</Text>
             </View>
 
             <View style={styles.divider} />
 
             <View style={styles.row}>
-              <Text style={styles.label}>Jurisdiction</Text>
-              <Text style={styles.value}>Nigeria (NAFDAC standards)</Text>
+              <Text style={styles.label}>{t.aboutScreen.jurisdiction}</Text>
+              <Text style={styles.value}>{t.aboutScreen.jurisdictionValue}</Text>
             </View>
           </View>
         </ScrollView>

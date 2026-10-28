@@ -11,59 +11,21 @@ import {
 } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { theme } from '../../theme';
-
-interface LegalSection {
-  heading: string;
-  body: string;
-}
-
-export interface LegalDocument {
-  title: string;
-  intro: string;
-  sections: LegalSection[];
-}
-
-// Placeholder copy from Figma (Settings frames 2570:20828 and 2570:20849).
-export const privacyPolicy: LegalDocument = {
-  title: 'Privacy policy',
-  intro: 'This content requires review by the VERYFY team before release.',
-  sections: [
-    {
-      heading: 'Information in this prototype',
-      body: 'This placeholder describes where information about account details, verification activity, and submitted reports may be explained.',
-    },
-    {
-      heading: 'Before release',
-      body: 'The VERYFY team must review and replace this text with an approved policy before launch.',
-    },
-  ],
-};
-
-export const termsOfUse: LegalDocument = {
-  title: 'Terms of use',
-  intro: 'This content requires review by the VERYFY team before release.',
-  sections: [
-    {
-      heading: 'Using VERYFY',
-      body: 'This placeholder will explain acceptable use of product checks, results, and reporting features.',
-    },
-    {
-      heading: 'Verification limitations',
-      body: 'Verification results depend on available information and do not guarantee that every product is genuine.',
-    },
-    {
-      heading: 'Before release',
-      body: 'The VERYFY team must review and replace this text with approved terms before launch.',
-    },
-  ],
-};
+import { useI18n } from '../../i18n';
 
 interface LegalDocumentScreenProps {
-  document: LegalDocument;
+  kind: 'privacy' | 'terms';
   onBack: () => void;
 }
 
-export const LegalDocumentScreen: React.FC<LegalDocumentScreenProps> = ({ document, onBack }) => {
+export const LegalDocumentScreen: React.FC<LegalDocumentScreenProps> = ({ kind, onBack }) => {
+  const { t } = useI18n();
+  // Placeholder copy from Figma (Settings frames 2570:20828 and 2570:20849).
+  const document =
+    kind === 'privacy'
+      ? { title: t.legal.privacyTitle, sections: t.legal.privacySections }
+      : { title: t.legal.termsTitle, sections: t.legal.termsSections };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
@@ -81,7 +43,7 @@ export const LegalDocumentScreen: React.FC<LegalDocumentScreenProps> = ({ docume
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.intro}>{document.intro}</Text>
+          <Text style={styles.intro}>{t.legal.reviewNotice}</Text>
           {document.sections.map((section) => (
             <View key={section.heading} style={styles.section}>
               <Text style={styles.sectionHeading}>{section.heading}</Text>

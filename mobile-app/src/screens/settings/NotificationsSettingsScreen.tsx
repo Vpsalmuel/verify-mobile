@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { theme } from '../../theme';
+import { useI18n } from '../../i18n';
 
 interface NotificationsSettingsScreenProps {
   onBack: () => void;
@@ -20,6 +21,7 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
   onBack,
 }) => {
   const [pushEnabled, setPushEnabled] = useState(true);
+  const { t } = useI18n();
   const [safetyAlerts, setSafetyAlerts] = useState(true);
   const [reportUpdates, setReportUpdates] = useState(true);
   const [verificationReminders, setVerificationReminders] = useState(false);
@@ -34,7 +36,7 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
           <TouchableOpacity style={styles.backBtn} onPress={onBack}>
             <ArrowLeft size={22} color={theme.colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Notifications</Text>
+          <Text style={styles.headerTitle}>{t.notificationsScreen.title}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -42,12 +44,12 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
           style={styles.scrollArea}
           contentContainerStyle={styles.scrollContent}
         >
-          <Text style={styles.subtitle}>Choose the updates you want to receive</Text>
+          <Text style={styles.subtitle}>{t.notificationsScreen.subtitle}</Text>
 
           <View style={styles.listContainer}>
             {/* Push notifications */}
             <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>Push notifications</Text>
+              <Text style={styles.toggleLabel}>{t.notificationsScreen.push}</Text>
               <Switch
                 value={pushEnabled}
                 onValueChange={setPushEnabled}
@@ -59,7 +61,7 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
 
             {/* Product and safety alerts */}
             <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>Product and safety alerts</Text>
+              <Text style={styles.toggleLabel}>{t.notificationsScreen.safetyAlerts}</Text>
               <Switch
                 value={safetyAlerts}
                 onValueChange={setSafetyAlerts}
@@ -71,7 +73,7 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
 
             {/* Report updates */}
             <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>Report updates</Text>
+              <Text style={styles.toggleLabel}>{t.notificationsScreen.reportUpdates}</Text>
               <Switch
                 value={reportUpdates}
                 onValueChange={setReportUpdates}
@@ -83,7 +85,7 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
 
             {/* Verification reminders */}
             <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>Verification reminders</Text>
+              <Text style={styles.toggleLabel}>{t.notificationsScreen.reminders}</Text>
               <Switch
                 value={verificationReminders}
                 onValueChange={setVerificationReminders}
@@ -95,7 +97,7 @@ export const NotificationsSettingsScreen: React.FC<NotificationsSettingsScreenPr
 
             {/* App updates */}
             <View style={styles.toggleRow}>
-              <Text style={styles.toggleLabel}>App updates</Text>
+              <Text style={styles.toggleLabel}>{t.notificationsScreen.appUpdates}</Text>
               <Switch
                 value={appUpdates}
                 onValueChange={setAppUpdates}

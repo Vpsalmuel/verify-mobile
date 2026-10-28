@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { CheckCircle2 } from 'lucide-react-native';
 import { theme } from '../theme';
+import { useI18n } from '../i18n';
 
 interface ReportSuccessScreenProps {
   onDone: () => void;
@@ -20,6 +21,7 @@ export const ReportSuccessScreen: React.FC<ReportSuccessScreenProps> = ({
   onDone,
   onReportAnother,
 }) => {
+  const { t } = useI18n();
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
@@ -29,10 +31,8 @@ export const ReportSuccessScreen: React.FC<ReportSuccessScreenProps> = ({
           <View style={styles.successIconWrapper}>
             <CheckCircle2 size={64} color="#22C55E" />
           </View>
-          <Text style={styles.title}>Submitted successfully</Text>
-          <Text style={styles.subtitle}>
-            Thank you for your report. We’ll review the details you’ve provided.
-          </Text>
+          <Text style={styles.title}>{t.reportSuccess.title}</Text>
+          <Text style={styles.subtitle}>{t.reportSuccess.subtitle}</Text>
         </View>
 
         {/* Action Buttons */}
@@ -42,7 +42,7 @@ export const ReportSuccessScreen: React.FC<ReportSuccessScreenProps> = ({
             activeOpacity={0.85}
             onPress={onDone}
           >
-            <Text style={styles.doneBtnText}>Done</Text>
+            <Text style={styles.doneBtnText}>{t.common.done}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -50,7 +50,7 @@ export const ReportSuccessScreen: React.FC<ReportSuccessScreenProps> = ({
             activeOpacity={0.8}
             onPress={onReportAnother}
           >
-            <Text style={styles.reportAnotherBtnText}>Report a Product</Text>
+            <Text style={styles.reportAnotherBtnText}>{t.common.reportAProduct}</Text>
           </TouchableOpacity>
         </View>
       </View>

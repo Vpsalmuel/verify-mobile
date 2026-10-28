@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { theme } from '../theme';
+import { useI18n } from '../i18n';
 
 interface OnboardingScreenProps {
   onScanPress?: () => void;
@@ -19,6 +20,7 @@ interface OnboardingScreenProps {
 const { width } = Dimensions.get('window');
 
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onScanPress }) => {
+  const { t } = useI18n();
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
@@ -34,10 +36,8 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onScanPress 
 
         {/* Text Content */}
         <View style={styles.contentContainer}>
-          <Text style={styles.title}>Know what’s genuine</Text>
-          <Text style={styles.subtitle}>
-            Verify your products with confidence. Scan a Uni-Code or enter it manually to check its authenticity.
-          </Text>
+          <Text style={styles.title}>{t.onboarding.title}</Text>
+          <Text style={styles.subtitle}>{t.onboarding.subtitle}</Text>
 
           {/* Primary Action Button */}
           <TouchableOpacity
@@ -45,7 +45,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onScanPress 
             activeOpacity={0.85}
             onPress={onScanPress}
           >
-            <Text style={styles.primaryButtonText}>Scan your first product</Text>
+            <Text style={styles.primaryButtonText}>{t.onboarding.cta}</Text>
           </TouchableOpacity>
         </View>
       </View>
