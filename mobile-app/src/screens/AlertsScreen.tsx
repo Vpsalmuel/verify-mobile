@@ -8,9 +8,10 @@ import {
   SafeAreaView,
   StatusBar,
   TextInput,
+  Image,
   Platform,
 } from 'react-native';
-import { Search, CalendarDays, BadgeCheck, ImageIcon } from 'lucide-react-native';
+import { Search, CalendarDays, BadgeCheck } from 'lucide-react-native';
 import { theme } from '../theme';
 import { BottomNav, TabKey } from '../components/BottomNav';
 import { FilterChips, FilterChipOption } from '../components/FilterChips';
@@ -123,11 +124,18 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
           <View style={styles.list}>
             {/* Featured alert */}
             <TouchableOpacity style={styles.heroCard} activeOpacity={0.9} onPress={onAlertPress}>
-              {/* TODO(figma asset): pharmacy shelves photo from Figma node 2570:20383 */}
-              <View style={styles.heroImagePlaceholder}>
-                <ImageIcon size={32} color="rgba(255,255,255,0.4)" />
-              </View>
-              <View style={styles.heroScrim} />
+              <Image
+                source={require('../assets/alerts-hero.png')}
+                style={styles.heroImage}
+                resizeMode="cover"
+              />
+              {/* Stacked bands approximate the Figma top-to-bottom dark gradient */}
+              {[0.15, 0.2, 0.25, 0.3].map((opacity, index) => (
+                <View
+                  key={opacity}
+                  style={[styles.heroScrim, { height: `${80 - index * 15}%`, opacity }]}
+                />
+              ))}
               <View style={styles.heroText}>
                 <Text style={styles.heroTitle}>Product verification</Text>
                 <Text style={styles.heroSubtitle}>
@@ -143,10 +151,11 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
                 activeOpacity={0.7}
                 onPress={onAlertPress}
               >
-                {/* TODO(figma asset): product photo from Figma node 2570:20390 */}
-                <View style={styles.thumbPlaceholder}>
-                  <ImageIcon size={24} color={theme.colors.textTertiary} />
-                </View>
+                <Image
+                  source={require('../assets/alert-product-peak.png')}
+                  style={styles.thumb}
+                  resizeMode="cover"
+                />
                 <View style={styles.alertText}>
                   <View style={styles.alertCopy}>
                     <Text style={styles.alertTitle} numberOfLines={1}>
@@ -235,23 +244,21 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'flex-end',
   },
-  heroImagePlaceholder: {
+  heroImage: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#4A4A4A',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
   },
   heroScrim: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: '65%',
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: '#000000',
   },
   heroText: {
     paddingHorizontal: theme.spacing.base,
@@ -277,13 +284,9 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     backgroundColor: theme.colors.white,
   },
-  thumbPlaceholder: {
+  thumb: {
     width: 70,
     height: 70,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   alertText: {
     flex: 1,

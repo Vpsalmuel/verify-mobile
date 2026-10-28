@@ -1,6 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, ScrollView } from 'react-native';
-import { ImageIcon } from 'lucide-react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  Pressable,
+  ScrollView,
+  Image,
+} from 'react-native';
 import { theme } from '../theme';
 
 const tips = [
@@ -26,10 +34,11 @@ export const SafetyTipsBottomSheet: React.FC<SafetyTipsBottomSheetProps> = ({
       <View style={styles.overlay}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         <View style={styles.sheet}>
-          {/* TODO(figma asset): shopper photo from Figma node 2570:21005 */}
-          <View style={styles.heroPlaceholder}>
-            <ImageIcon size={36} color={theme.colors.textTertiary} />
-          </View>
+          <Image
+            source={require('../assets/safety-tips-hero.png')}
+            style={styles.heroImage}
+            resizeMode="cover"
+          />
           <View style={styles.handle} />
 
           <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -72,11 +81,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     maxHeight: '92%',
   },
-  heroPlaceholder: {
+  heroImage: {
+    width: '100%',
     height: 252,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   handle: {
     position: 'absolute',
