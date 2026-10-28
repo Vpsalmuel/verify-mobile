@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { Search, CalendarDays, BadgeCheck } from 'lucide-react-native';
 import { theme } from '../theme';
-import { BottomNav, TabKey } from '../components/BottomNav';
 import { FilterChips, FilterChipOption } from '../components/FilterChips';
 
 type AlertFilter = 'all' | 'recalls' | 'counterfeit' | 'safety';
@@ -70,16 +69,10 @@ const mockAlerts: AlertItem[] = [
 ];
 
 interface AlertsScreenProps {
-  activeTab: TabKey;
-  onTabPress: (tab: TabKey) => void;
-  onScanPress: () => void;
   onAlertPress: () => void;
 }
 
 export const AlertsScreen: React.FC<AlertsScreenProps> = ({
-  activeTab,
-  onTabPress,
-  onScanPress,
   onAlertPress,
 }) => {
   const [activeFilter, setActiveFilter] = useState<AlertFilter>('all');
@@ -180,8 +173,6 @@ export const AlertsScreen: React.FC<AlertsScreenProps> = ({
             {alerts.length === 0 && <Text style={styles.emptyText}>No alerts match your search.</Text>}
           </View>
         </ScrollView>
-
-        <BottomNav activeTab={activeTab} onTabPress={onTabPress} onScanPress={onScanPress} />
       </View>
     </SafeAreaView>
   );

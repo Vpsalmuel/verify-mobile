@@ -18,10 +18,8 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import { theme } from '../../theme';
-import { BottomNav, TabKey } from '../../components/BottomNav';
 
 export type SettingsSubScreen =
-  | 'menu'
   | 'language'
   | 'notifications'
   | 'appearance'
@@ -32,16 +30,10 @@ export type SettingsSubScreen =
 
 interface SettingsMainScreenProps {
   onNavigateSub: (screen: SettingsSubScreen) => void;
-  activeTab: TabKey;
-  onTabPress: (tab: TabKey) => void;
-  onScanPress: () => void;
 }
 
 export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
   onNavigateSub,
-  activeTab,
-  onTabPress,
-  onScanPress,
 }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -131,13 +123,6 @@ export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
             <Text style={styles.footerNote}>Veryfy version 1.0 · Made for Nigeria</Text>
           </View>
         </ScrollView>
-
-        {/* Persistent Bottom Nav */}
-        <BottomNav
-          activeTab={activeTab}
-          onTabPress={onTabPress}
-          onScanPress={onScanPress}
-        />
       </View>
     </SafeAreaView>
   );

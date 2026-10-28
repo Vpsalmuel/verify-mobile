@@ -17,14 +17,13 @@ import {
 } from 'lucide-react-native';
 import { theme } from '../theme';
 import { StatusBadge, BadgeStatus } from '../components/StatusBadge';
-import { BottomNav, TabKey } from '../components/BottomNav';
 import {
   ReportDetailsBottomSheet,
   ReportDetailsData,
 } from '../components/ReportDetailsBottomSheet';
 import { SafetyTipsBottomSheet } from '../components/SafetyTipsBottomSheet';
 
-interface RecentCheckItem {
+export interface RecentCheckItem {
   id: string;
   name: string;
   source: string;
@@ -64,23 +63,16 @@ const mockRecentChecks: RecentCheckItem[] = [
 ];
 
 interface HomeScreenProps {
-  activeTab?: TabKey;
-  onTabPress?: (tab: TabKey) => void;
   onVerifyPress?: () => void;
   onCheckItemPress?: (item: RecentCheckItem) => void;
   onViewAllPress?: () => void;
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({
-  activeTab = 'home',
-  onTabPress,
   onVerifyPress,
   onCheckItemPress,
   onViewAllPress,
 }) => {
-  const [internalTab, setInternalTab] = useState<TabKey>('home');
-  const currentTab = onTabPress ? activeTab : internalTab;
-  const handleTabPress = onTabPress || setInternalTab;
   const [selectedReport, setSelectedReport] = useState<ReportDetailsData | null>(null);
   const [safetyTipsVisible, setSafetyTipsVisible] = useState(false);
 
@@ -191,13 +183,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             ))}
           </View>
         </ScrollView>
-
-        {/* Persistent Bottom Navigation */}
-        <BottomNav
-          activeTab={currentTab}
-          onTabPress={handleTabPress}
-          onScanPress={onVerifyPress || (() => {})}
-        />
 
         {/* Suspicious Product / Report Details Bottom Sheet */}
         <ReportDetailsBottomSheet

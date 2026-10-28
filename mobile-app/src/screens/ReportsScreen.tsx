@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 import { theme } from '../theme';
-import { BottomNav, TabKey } from '../components/BottomNav';
 import {
   ReportDetailsBottomSheet,
   ReportDetailsData,
@@ -75,16 +74,10 @@ const mockReports: ReportItem[] = [
 ];
 
 interface ReportsScreenProps {
-  activeTab: TabKey;
-  onTabPress: (tab: TabKey) => void;
-  onScanPress: () => void;
   onReportAProductPress: () => void;
 }
 
 export const ReportsScreen: React.FC<ReportsScreenProps> = ({
-  activeTab,
-  onTabPress,
-  onScanPress,
   onReportAProductPress,
 }) => {
   const [activeFilter, setActiveFilter] = useState<ReportFilter>('all');
@@ -224,13 +217,6 @@ export const ReportsScreen: React.FC<ReportsScreenProps> = ({
             <Text style={styles.reportButtonText}>Report a Product</Text>
           </TouchableOpacity>
         </ScrollView>
-
-        {/* Bottom Navigation */}
-        <BottomNav
-          activeTab={activeTab}
-          onTabPress={onTabPress}
-          onScanPress={onScanPress}
-        />
 
         {/* Report Details Bottom Sheet */}
         <ReportDetailsBottomSheet
