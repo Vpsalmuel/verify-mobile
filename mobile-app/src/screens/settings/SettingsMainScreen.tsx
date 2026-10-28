@@ -10,24 +10,22 @@ import {
   Platform,
 } from 'react-native';
 import {
-  Globe,
+  Flag,
   Bell,
   HelpCircle,
-  ShieldCheck,
   ChevronRight,
-  SunMoon,
-  Info,
 } from 'lucide-react-native';
 import { theme } from '../../theme';
 import { BottomNav, TabKey } from '../../components/BottomNav';
 
 export type SettingsSubScreen =
   | 'menu'
-  | 'notifications'
   | 'language'
+  | 'notifications'
   | 'appearance'
   | 'faqs'
-  | 'about';
+  | 'about'
+  | 'terms';
 
 interface SettingsMainScreenProps {
   onNavigateSub: (screen: SettingsSubScreen) => void;
@@ -57,86 +55,68 @@ export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
             <Text style={styles.subtitle}>Manage your app preferences</Text>
           </View>
 
-          {/* Settings Options List */}
-          <View style={styles.menuCard}>
-            {/* Language */}
+          {/* Individual Rounded Cards */}
+          <View style={styles.cardsContainer}>
+            {/* 1. Language Card */}
             <TouchableOpacity
-              style={styles.menuRow}
+              style={styles.settingCard}
               activeOpacity={0.7}
               onPress={() => onNavigateSub('language')}
             >
-              <View style={styles.menuLeft}>
-                <Globe size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.menuLabel}>Language</Text>
+              <View style={styles.cardLeft}>
+                <Flag size={20} color={theme.colors.textPrimary} />
+                <Text style={styles.cardLabel}>Language</Text>
               </View>
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>
 
-            <View style={styles.divider} />
-
-            {/* Notifications */}
+            {/* 2. Notifications Card */}
             <TouchableOpacity
-              style={styles.menuRow}
+              style={styles.settingCard}
               activeOpacity={0.7}
               onPress={() => onNavigateSub('notifications')}
             >
-              <View style={styles.menuLeft}>
+              <View style={styles.cardLeft}>
                 <Bell size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.menuLabel}>Notifications</Text>
+                <Text style={styles.cardLabel}>Notifications</Text>
               </View>
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>
 
-            <View style={styles.divider} />
-
-            {/* Appearance */}
+            {/* 3. FAQs Card */}
             <TouchableOpacity
-              style={styles.menuRow}
-              activeOpacity={0.7}
-              onPress={() => onNavigateSub('appearance')}
-            >
-              <View style={styles.menuLeft}>
-                <SunMoon size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.menuLabel}>Appearance</Text>
-              </View>
-              <ChevronRight size={18} color={theme.colors.textTertiary} />
-            </TouchableOpacity>
-
-            <View style={styles.divider} />
-
-            {/* FAQs */}
-            <TouchableOpacity
-              style={styles.menuRow}
+              style={styles.settingCard}
               activeOpacity={0.7}
               onPress={() => onNavigateSub('faqs')}
             >
-              <View style={styles.menuLeft}>
+              <View style={styles.cardLeft}>
                 <HelpCircle size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.menuLabel}>FAQs</Text>
+                <Text style={styles.cardLabel}>FAQs</Text>
               </View>
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>
 
-            <View style={styles.divider} />
-
-            {/* About & Privacy */}
+            {/* 4. Terms & Privacy Policy Card */}
             <TouchableOpacity
-              style={styles.menuRow}
+              style={styles.settingCard}
               activeOpacity={0.7}
-              onPress={() => onNavigateSub('about')}
+              onPress={() => onNavigateSub('terms')}
             >
-              <View style={styles.menuLeft}>
-                <ShieldCheck size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.menuLabel}>About VERYFY & Privacy</Text>
+              <View style={styles.cardLeft}>
+                <HelpCircle size={20} color={theme.colors.textPrimary} />
+                <Text style={styles.cardLabel}>Terms & Privacy Policy</Text>
               </View>
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>
           </View>
 
-          {/* Footer branding caption */}
-          <Text style={styles.footerNote}>Veryfy version 1.0 · Made for Nigeria</Text>
+          {/* Subtle Footer Caption */}
+          <View style={styles.footerSpacing}>
+            <Text style={styles.footerNote}>Veryfy version 1.0 · Made for Nigeria</Text>
+          </View>
         </ScrollView>
 
+        {/* Persistent Bottom Nav */}
         <BottomNav
           activeTab={activeTab}
           onTabPress={onTabPress}
@@ -178,39 +158,38 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.sizes.md,
     color: theme.colors.textSecondary,
   },
-  menuCard: {
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    backgroundColor: theme.colors.white,
-    overflow: 'hidden',
-    marginBottom: theme.spacing.xxl,
+  cardsContainer: {
+    gap: 12,
+    marginBottom: 40,
   },
-  menuRow: {
+  settingCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.base,
     paddingVertical: 18,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.white,
   },
-  menuLeft: {
+  cardLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.md,
   },
-  menuLabel: {
+  cardLabel: {
     fontSize: theme.typography.sizes.md,
-    fontWeight: theme.typography.weights.medium,
+    fontWeight: theme.typography.weights.regular,
     color: theme.colors.textPrimary,
   },
-  divider: {
-    height: 1,
-    backgroundColor: theme.colors.border,
+  footerSpacing: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xl,
   },
   footerNote: {
     textAlign: 'center',
     fontSize: theme.typography.sizes.xs,
     color: theme.colors.textLabel,
-    marginTop: theme.spacing.base,
   },
 });

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify App - Live Interactive Simulator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0f172a 100%);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 40px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 14px;
+      background: #3D52D5;
+      color: #ffffff;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      box-shadow: 0 0 20px rgba(61, 82, 213, 0.4);
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    .app-workspace {
+      display: flex;
+      flex-direction: row;
+      gap: 36px;
+      max-width: 1080px;
+      width: 100%;
+      align-items: flex-start;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    /* Modern Phone Frame (iPhone 15 / 16 style) */
+    .device-wrapper {
+      position: relative;
+    }
+
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      background: #ffffff;
+      border-radius: 52px;
+      box-shadow: 
+        0 25px 70px rgba(0, 0, 0, 0.7),
+        0 0 0 12px #1e293b,
+        0 0 0 14px #334155;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Dynamic Island / Notch */
+    .dynamic-island {
+      position: absolute;
+      top: 11px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 30px;
+      background: #000000;
+      border-radius: 20px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 12px;
+    }
+
+    .camera-lens {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #111827;
+      border: 1px solid #1f2937;
+    }
+
+    /* Screen Container */
+    .screen-viewport {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .screen-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+    }
+
+    .screen-layer.active {
+      display: block;
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.99); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Interactive Clickable Hotspots overlay */
+    .hotspot {
+      position: absolute;
+      cursor: pointer;
+      z-index: 500;
+      background: rgba(61, 82, 213, 0);
+      transition: background 0.15s ease;
+      border-radius: 8px;
+    }
+
+    .hotspot:hover {
+      background: rgba(61, 82, 213, 0.2);
+      outline: 2px dashed rgba(61, 82, 213, 0.6);
+    }
+
+    /* Control Panel */
+    .controls-panel {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 24px;
+      padding: 24px;
+      width: 380px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .panel-header {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #ffffff;
+    }
+
+    .panel-desc {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .section-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 700;
+      color: #64748b;
+      margin: 16px 0 8px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      padding: 12px 16px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn:hover {
+      background: #273549;
+      border-color: #475569;
+    }
+
+    .nav-btn.active {
+      background: #3D52D5;
+      border-color: #4F46E5;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(61, 82, 213, 0.4);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #475569;
+    }
+
+    .nav-btn.active .dot {
+      background: #ffffff;
+    }
+
+    .tip-box {
+      margin-top: 20px;
+      background: rgba(61, 82, 213, 0.12);
+      border: 1px solid rgba(61, 82, 213, 0.3);
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 12px;
+      color: #c7d2fe;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 850px) {
+      .app-workspace {
+        flex-direction: column;
+        align-items: center;
+      }
+      .controls-panel {
+        width: 100%;
+        max-width: 375px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="badge">Verify Mobile App</div>
+    <h1>Interactive Prototype Simulator</h1>
+    <p class="subtitle">Click on the phone screen buttons or select screens from the sidebar</p>
+  </header>
+
+  <div class="app-workspace">
+    <!-- Simulator Device -->
+    <div class="device-wrapper">
+      <div class="phone-frame">
+        <div class="dynamic-island">
+          <div class="camera-lens"></div>
+        </div>
+
+        <div class="screen-viewport">
+          <!-- 1. Splash Screen -->
+          <div id="screen-splash" class="screen-layer active" style="background-image: url('01_Splash.png');">
+            <!-- Click screen to proceed -->
+            <div class="hotspot" style="top:0; left:0; width:100%; height:100%;" onclick="goToScreen('onboarding')" title="Click anywhere to continue"></div>
+          </div>
+
+          <!-- 2. Onboarding Screen -->
+          <div id="screen-onboarding" class="screen-layer" style="background-image: url('02_Onboarding.png');">
+            <!-- "Scan your first product" CTA button -->
+            <div class="hotspot" style="bottom: 40px; left: 24px; width: 327px; height: 54px;" onclick="goToScreen('home')" title="Scan your first product"></div>
+          </div>
+
+          <!-- 3. Home Screen -->
+          <div id="screen-home" class="screen-layer" style="background-image: url('03_Home.png');">
+            <!-- "Verify a product" Blue Hero Card -->
+            <div class="hotspot" style="top: 140px; left: 20px; width: 335px; height: 115px;" onclick="goToScreen('result-verified')" title="Verify a product"></div>
+            
+            <!-- "Stay safer when buying products" Notice -->
+            <div class="hotspot" style="top: 270px; left: 20px; width: 335px; height: 65px;" onclick="goToScreen('overlay-reviewed')" title="Review Finding Details"></div>
+
+            <!-- Recent Check 1 (Verified) -->
+            <div class="hotspot" style="top: 400px; left: 20px; width: 335px; height: 60px;" onclick="goToScreen('result-verified')" title="View Verified Result"></div>
+
+            <!-- Recent Check 2 (Verified) -->
+            <div class="hotspot" style="top: 470px; left: 20px; width: 335px; height: 60px;" onclick="goToScreen('result-not-verified')" title="View Not Verified Result"></div>
+
+            <!-- Recent Check 3 (Not Verified) -->
+            <div class="hotspot" style="top: 540px; left: 20px; width: 335px; height: 60px;" onclick="goToScreen('overlay-under-review')" title="View Under Review Overlay"></div>
+
+            <!-- Bottom Nav: Reports Tab -->
+            <div class="hotspot" style="bottom: 0; left: 75px; width: 75px; height: 65px;" onclick="goToScreen('overlay-under-review')" title="Reports"></div>
+
+            <!-- Bottom Nav: Center Scan FAB -->
+            <div class="hotspot" style="bottom: 12px; left: 160px; width: 55px; height: 55px;" onclick="goToScreen('result-verified')" title="Scan"></div>
+
+            <!-- Bottom Nav: Alerts Tab -->
+            <div class="hotspot" style="bottom: 0; left: 225px; width: 75px; height: 65px;" onclick="goToScreen('alert-details')" title="Alerts"></div>
+
+            <!-- Bottom Nav: Settings Tab -->
+            <div class="hotspot" style="bottom: 0; left: 300px; width: 75px; height: 65px;" onclick="goToScreen('settings')" title="Settings"></div>
+          </div>
+
+          <!-- 4. Result: Verified -->
+          <div id="screen-result-verified" class="screen-layer" style="background-image: url('04_Verified_Result.png');">
+            <!-- Back chevron -->
+            <div class="hotspot" style="top: 45px; left: 16px; width: 44px; height: 44px;" onclick="goToScreen('home')" title="Back"></div>
+            <!-- "Scan another product" -->
+            <div class="hotspot" style="bottom: 96px; left: 20px; width: 335px; height: 52px;" onclick="goToScreen('result-not-verified')" title="Scan another product"></div>
+            <!-- "Go to homepage" -->
+            <div class="hotspot" style="bottom: 34px; left: 20px; width: 335px; height: 52px;" onclick="goToScreen('home')" title="Go to homepage"></div>
+          </div>
+
+          <!-- 5. Result: Not Verified -->
+          <div id="screen-result-not-verified" class="screen-layer" style="background-image: url('05_Not_Verified_Result.png');">
+            <div class="hotspot" style="top: 45px; left: 16px; width: 44px; height: 44px;" onclick="goToScreen('home')" title="Back"></div>
+            <div class="hotspot" style="bottom: 96px; left: 20px; width: 335px; height: 52px;" onclick="goToScreen('result-invalid')" title="Try again"></div>
+            <div class="hotspot" style="bottom: 34px; left: 20px; width: 335px; height: 52px;" onclick="goToScreen('home')" title="Go to homepage"></div>
+          </div>
+
+          <!-- 6. Result: Invalid -->
+          <div id="screen-result-invalid" class="screen-layer" style="background-image: url('06_Invalid_Result.png');">
+            <div class="hotspot" style="top: 45px; left: 16px; width: 44px; height: 44px;" onclick="goToScreen('home')" title="Back"></div>
+            <div class="hotspot" style="bottom: 96px; left: 20px; width: 335px; height: 52px;" onclick="goToScreen('overlay-reviewed')" title="Report this product"></div>
+            <div class="hotspot" style="bottom: 34px; left: 20px; width: 335px; height: 52px;" onclick="goToScreen('home')" title="Go to homepage"></div>
+          </div>
+
+          <!-- 7. Overlay: Under Review -->
+          <div id="screen-overlay-under-review" class="screen-layer" style="background-image: url('07_Report_Under_Review.png');">
+            <!-- Close X -->
+            <div class="hotspot" style="top: 36px; right: 20px; width: 36px; height: 36px;" onclick="goToScreen('home')" title="Close"></div>
+            <!-- Drag handle area -->
+            <div class="hotspot" style="top: 10px; left: 0; width: 100%; height: 30px;" onclick="goToScreen('home')" title="Close"></div>
+          </div>
+
+          <!-- 8. Overlay: Reviewed Finding -->
+          <div id="screen-overlay-reviewed" class="screen-layer" style="background-image: url('08_Report_Reviewed.png');">
+            <div class="hotspot" style="top: 36px; right: 20px; width: 36px; height: 36px;" onclick="goToScreen('home')" title="Close"></div>
+            <div class="hotspot" style="top: 10px; left: 0; width: 100%; height: 30px;" onclick="goToScreen('home')" title="Close"></div>
+          </div>
+
+          <!-- 9. Alert Details -->
+          <div id="screen-alert-details" class="screen-layer" style="background-image: url('10_Alert_Details.png');">
+            <div class="hotspot" style="top: 45px; left: 16px; width: 44px; height: 44px;" onclick="goToScreen('home')" title="Back to Home"></div>
+          </div>
+
+          <!-- 10. Settings Suite -->
+          <div id="screen-settings" class="screen-layer" style="background-image: url('09_Settings_Section.png');">
+            <!-- Bottom nav to return to Home -->
+            <div class="hotspot" style="bottom: 0; left: 0; width: 75px; height: 65px;" onclick="goToScreen('home')" title="Home"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Navigation Sidebar -->
+    <div class="controls-panel">
+      <div class="panel-header">Screen Navigator</div>
+      <div class="panel-desc">You can click buttons directly on the phone or jump to any screen below:</div>
+
+      <div class="section-tag">Core Flow</div>
+      <button class="nav-btn active" data-id="splash" onclick="goToScreen('splash', this)">
+        <span>1. Splash Screen</span>
+        <div class="dot"></div>
+      </button>
+      <button class="nav-btn" data-id="onboarding" onclick="goToScreen('onboarding', this)">
+        <span>2. Onboarding Screen</span>
+        <div class="dot"></div>
+      </button>
+      <button class="nav-btn" data-id="home" onclick="goToScreen('home', this)">
+        <span>3. Home Dashboard</span>
+        <div class="dot"></div>
+      </button>
+
+      <div class="section-tag">Verification Outcomes</div>
+      <button class="nav-btn" data-id="result-verified" onclick="goToScreen('result-verified', this)">
+        <span>4. Verified Result (Green)</span>
+        <div class="dot"></div>
+      </button>
+      <button class="nav-btn" data-id="result-not-verified" onclick="goToScreen('result-not-verified', this)">
+        <span>5. Not Verified Result (Amber)</span>
+        <div class="dot"></div>
+      </button>
+      <button class="nav-btn" data-id="result-invalid" onclick="goToScreen('result-invalid', this)">
+        <span>6. Invalid Result (Red)</span>
+        <div class="dot"></div>
+      </button>
+
+      <div class="section-tag">Reports & Alerts</div>
+      <button class="nav-btn" data-id="overlay-under-review" onclick="goToScreen('overlay-under-review', this)">
+        <span>7. Report: Under Review</span>
+        <div class="dot"></div>
+      </button>
+      <button class="nav-btn" data-id="overlay-reviewed" onclick="goToScreen('overlay-reviewed', this)">
+        <span>8. Report: Reviewed Finding</span>
+        <div class="dot"></div>
+      </button>
+      <button class="nav-btn" data-id="alert-details" onclick="goToScreen('alert-details', this)">
+        <span>9. Alert Details Screen</span>
+        <div class="dot"></div>
+      </button>
+
+      <div class="section-tag">Preferences</div>
+      <button class="nav-btn" data-id="settings" onclick="goToScreen('settings', this)">
+        <span>10. Settings Suite</span>
+        <div class="dot"></div>
+      </button>
+
+      <div class="tip-box">
+        💡 <strong>Interactive Hotspots:</strong> Hovering over buttons on the phone highlights clickable areas in blue. You can navigate the complete prototype end-to-end.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function goToScreen(screenKey, btnElement) {
+      // Hide all layers
+      document.querySelectorAll('.screen-layer').forEach(layer => {
+        layer.classList.remove('active');
+      });
+
+      // Show selected layer
+      const targetLayer = document.getElementById('screen-' + screenKey);
+      if (targetLayer) {
+        targetLayer.classList.add('active');
+      }
+
+      // Update sidebar button state
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      if (btnElement) {
+        btnElement.classList.add('active');
+      } else {
+        const matchingBtn = document.querySelector(`.nav-btn[data-id="${screenKey}"]`);
+        if (matchingBtn) matchingBtn.classList.add('active');
+      }
+    }
+
+    // Auto-transition from Splash to Onboarding after 2.5s on initial load
+    setTimeout(() => {
+      const splashLayer = document.getElementById('screen-splash');
+      if (splashLayer && splashLayer.classList.contains('active')) {
+        goToScreen('onboarding');
+      }
+    }, 2500);
+  </script>
+</body>
+</html>
