@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { SplashScreen } from './src/screens/SplashScreen';
 import { OnboardingScreen } from './src/screens/OnboardingScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
@@ -9,6 +9,9 @@ import {
 } from './src/screens/VerificationResultScreen';
 import { SettingsContainerScreen } from './src/screens/settings/SettingsContainerScreen';
 import { AlertDetailsScreen } from './src/screens/AlertDetailsScreen';
+import { AlertsScreen } from './src/screens/AlertsScreen';
+import { HistoryScreen } from './src/screens/HistoryScreen';
+import { VerifyingProductScreen } from './src/screens/VerifyingProductScreen';
 import { ReportsScreen } from './src/screens/ReportsScreen';
 import { ReportAProductScreen } from './src/screens/ReportAProductScreen';
 import { ReportSuccessScreen } from './src/screens/ReportSuccessScreen';
@@ -19,7 +22,10 @@ type AppStep =
   | 'onboarding'
   | 'main'
   | 'scan'
+  | 'verifying'
   | 'result'
+  | 'history'
+  | 'alert_details'
   | 'report_form'
   | 'report_success';
 
@@ -28,6 +34,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabKey>('home');
   const [resultState, setResultState] = useState<VerificationState>('verified');
   const [scannedCode, setScannedCode] = useState<string>('VFY-2849-1036');
+  const showResult = useCallback(() => setCurrentStep('result'), []);
 
   if (currentStep === 'splash') {
     return <SplashScreen onFinish={() => setCurrentStep('onboarding')} />;
@@ -56,10 +63,31 @@ export default function App() {
           } else {
             setResultState('verified');
           }
+          setCurrentStep('verifying');
+        }}
+      />
+    );
+  }
+
+  if (currentStep === 'verifying') {
+    return <VerifyingProductScreen onComplete={showResult} />;
+  }
+
+  if (currentStep === 'history') {
+    return (
+      <HistoryScreen
+        onBack={() => setCurrentStep('main')}
+        onScanPress={() => setCurrentStep('scan')}
+        onItemPress={(item) => {
+          setResultState(item.status);
           setCurrentStep('result');
         }}
       />
     );
+  }
+
+  if (currentStep === 'alert_details') {
+    return <AlertDetailsScreen onBack={() => setCurrentStep('main')} />;
   }
 
   if (currentStep === 'result') {
@@ -113,8 +141,11 @@ export default function App() {
 
   if (activeTab === 'alerts') {
     return (
-      <AlertDetailsScreen
-        onBack={() => setActiveTab('home')}
+      <AlertsScreen
+        activeTab={activeTab}
+        onTabPress={setActiveTab}
+        onScanPress={() => setCurrentStep('scan')}
+        onAlertPress={() => setCurrentStep('alert_details')}
       />
     );
   }
@@ -136,9 +167,7 @@ export default function App() {
       onVerifyPress={() => {
         setCurrentStep('scan');
       }}
-      onSafetyTipsPress={() => {
-        console.log('Open product safety tips');
-      }}
+      onViewAllPress={() => setCurrentStep('history')}
       onCheckItemPress={(item) => {
         setResultState(item.status);
         setCurrentStep('result');

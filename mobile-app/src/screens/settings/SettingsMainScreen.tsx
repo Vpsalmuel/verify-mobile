@@ -13,6 +13,8 @@ import {
   Flag,
   Bell,
   HelpCircle,
+  FileText,
+  ShieldCheck,
   ChevronRight,
 } from 'lucide-react-native';
 import { theme } from '../../theme';
@@ -25,7 +27,8 @@ export type SettingsSubScreen =
   | 'appearance'
   | 'faqs'
   | 'about'
-  | 'terms';
+  | 'terms'
+  | 'privacy';
 
 interface SettingsMainScreenProps {
   onNavigateSub: (screen: SettingsSubScreen) => void;
@@ -96,15 +99,28 @@ export const SettingsMainScreen: React.FC<SettingsMainScreenProps> = ({
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>
 
-            {/* 4. Terms & Privacy Policy Card */}
+            {/* 4. Terms of Use Card */}
             <TouchableOpacity
               style={styles.settingCard}
               activeOpacity={0.7}
               onPress={() => onNavigateSub('terms')}
             >
               <View style={styles.cardLeft}>
-                <HelpCircle size={20} color={theme.colors.textPrimary} />
-                <Text style={styles.cardLabel}>Terms & Privacy Policy</Text>
+                <FileText size={20} color={theme.colors.textPrimary} />
+                <Text style={styles.cardLabel}>Terms of use</Text>
+              </View>
+              <ChevronRight size={18} color={theme.colors.textTertiary} />
+            </TouchableOpacity>
+
+            {/* 5. Privacy Policy Card */}
+            <TouchableOpacity
+              style={styles.settingCard}
+              activeOpacity={0.7}
+              onPress={() => onNavigateSub('privacy')}
+            >
+              <View style={styles.cardLeft}>
+                <ShieldCheck size={20} color={theme.colors.textPrimary} />
+                <Text style={styles.cardLabel}>Privacy policy</Text>
               </View>
               <ChevronRight size={18} color={theme.colors.textTertiary} />
             </TouchableOpacity>

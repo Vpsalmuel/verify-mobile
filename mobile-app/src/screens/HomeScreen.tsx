@@ -22,6 +22,7 @@ import {
   ReportDetailsBottomSheet,
   ReportDetailsData,
 } from '../components/ReportDetailsBottomSheet';
+import { SafetyTipsBottomSheet } from '../components/SafetyTipsBottomSheet';
 
 interface RecentCheckItem {
   id: string;
@@ -66,7 +67,6 @@ interface HomeScreenProps {
   activeTab?: TabKey;
   onTabPress?: (tab: TabKey) => void;
   onVerifyPress?: () => void;
-  onSafetyTipsPress?: () => void;
   onCheckItemPress?: (item: RecentCheckItem) => void;
   onViewAllPress?: () => void;
 }
@@ -75,7 +75,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   activeTab = 'home',
   onTabPress,
   onVerifyPress,
-  onSafetyTipsPress,
   onCheckItemPress,
   onViewAllPress,
 }) => {
@@ -83,6 +82,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const currentTab = onTabPress ? activeTab : internalTab;
   const handleTabPress = onTabPress || setInternalTab;
   const [selectedReport, setSelectedReport] = useState<ReportDetailsData | null>(null);
+  const [safetyTipsVisible, setSafetyTipsVisible] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -126,24 +126,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           <TouchableOpacity
             style={styles.noticeCard}
             activeOpacity={0.8}
-            onPress={() => {
-              // Quick demo opening the Reviewed report sheet
-              setSelectedReport({
-                reportId: 'VFY-346D4',
-                productName: 'PureGlow Face Cream',
-                submittedDate: 'Submitted 12 June 2025',
-                status: 'reviewed',
-                outcomeType: 'mismatch',
-                reason: 'Product source mismatch',
-                category: 'Cosmetics',
-                verificationResult: 'Could not be verified',
-                findingTitle: 'Source mismatch detected',
-                findingDescription:
-                  'The product’s source does not match NAFDAC and manufacturer records. Authenticity could not be verified.',
-                imageSource: require('../assets/report-product-2.png'),
-              });
-              if (onSafetyTipsPress) onSafetyTipsPress();
-            }}
+            onPress={() => setSafetyTipsVisible(true)}
           >
             <View style={styles.noticeIconWrapper}>
               <Info size={22} color={theme.colors.textSecondary} />
@@ -221,6 +204,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
           visible={selectedReport !== null}
           onClose={() => setSelectedReport(null)}
           data={selectedReport || undefined}
+        />
+
+        {/* "Stay safer when buying products" tips sheet */}
+        <SafetyTipsBottomSheet
+          visible={safetyTipsVisible}
+          onClose={() => setSafetyTipsVisible(false)}
+          onScanPress={() => {
+            setSafetyTipsVisible(false);
+            onVerifyPress?.();
+          }}
         />
       </View>
     </SafeAreaView>
