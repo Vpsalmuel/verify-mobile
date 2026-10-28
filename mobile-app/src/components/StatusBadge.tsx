@@ -1,9 +1,28 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { CheckCircle2, AlertCircle, XCircle } from 'lucide-react-native';
+import { BadgeCheck, CircleHelp, OctagonX } from 'lucide-react-native';
 import { theme } from '../theme';
 
 export type BadgeStatus = 'verified' | 'not-verified' | 'invalid';
+
+// Filled icons matching Figma's verified-filled / help-filled / dangerous-filled:
+// the shape is filled with the label colour and the glyph is cut out in the badge colour.
+export const statusIcons = {
+  verified: BadgeCheck,
+  'not-verified': CircleHelp,
+  invalid: OctagonX,
+};
+
+// Figma "Status Badge" (Small), as used in list rows.
+const variants = {
+  verified: { bg: theme.colors.verifiedBorder, text: theme.colors.verifiedText, label: 'Verified' },
+  'not-verified': {
+    bg: theme.colors.surface,
+    text: theme.colors.textForeground,
+    label: 'Not verified',
+  },
+  invalid: { bg: theme.colors.invalidBorder, text: theme.colors.white, label: 'Invalid' },
+};
 
 interface StatusBadgeProps {
   status: BadgeStatus;
@@ -11,29 +30,13 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, label }) => {
-  let bg = theme.colors.verifiedBorder;
-  let textColor = theme.colors.verifiedText;
-  let defaultLabel = 'Verified';
-  let IconComponent = CheckCircle2;
-
-  if (status === 'not-verified') {
-    bg = theme.colors.notVerifiedBorder;
-    textColor = theme.colors.white;
-    defaultLabel = 'Not verified';
-    IconComponent = AlertCircle;
-  } else if (status === 'invalid') {
-    bg = theme.colors.invalidBorder;
-    textColor = theme.colors.white;
-    defaultLabel = 'Invalid';
-    IconComponent = XCircle;
-  }
+  const variant = variants[status];
+  const Icon = statusIcons[status];
 
   return (
-    <View style={[styles.badge, { backgroundColor: bg }]}>
-      <IconComponent size={12} color={textColor} />
-      <Text style={[styles.text, { color: textColor }]}>
-        {label || defaultLabel}
-      </Text>
+    <View style={[styles.badge, { backgroundColor: variant.bg }]}>
+      <Icon size={16} color={variant.bg} fill={variant.text} />
+      <Text style={[styles.text, { color: variant.text }]}>{label || variant.label}</Text>
     </View>
   );
 };
@@ -49,6 +52,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.medium,
+    fontWeight: theme.typography.weights.regular,
   },
 });

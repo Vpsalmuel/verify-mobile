@@ -137,7 +137,7 @@ export const ReportDetailsBottomSheet: React.FC<ReportDetailsBottomSheetProps> =
 
               {/* Product Visual */}
               <Image
-                source={data.imageSource || require('../assets/report-product-1.png')}
+                source={data.imageSource || require('../assets/product-voltarol.png')}
                 style={styles.productImage}
                 resizeMode="cover"
               />
