@@ -223,7 +223,7 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
                 activeOpacity={0.8}
                 onPress={onDone}
               >
-                <Text style={styles.secondaryBtnText}>Done</Text>
+                <Text style={styles.secondaryBtnText}>Go to homepage</Text>
               </TouchableOpacity>
             </>
           )}
@@ -242,7 +242,7 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
                 activeOpacity={0.8}
                 onPress={onDone}
               >
-                <Text style={styles.secondaryBtnText}>Done</Text>
+                <Text style={styles.secondaryBtnText}>Go to homepage</Text>
               </TouchableOpacity>
             </>
           )}
@@ -261,7 +261,7 @@ export const VerificationResultScreen: React.FC<VerificationResultScreenProps> =
                 activeOpacity={0.8}
                 onPress={onDone}
               >
-                <Text style={styles.secondaryBtnText}>Done</Text>
+                <Text style={styles.secondaryBtnText}>Go to homepage</Text>
               </TouchableOpacity>
             </>
           )}
