@@ -56,6 +56,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "owner": "kufrey",
+    "extra": {
+      "eas": {
+        "projectId": "6f27175f-0bb5-4beb-9895-2b48323d7d70"
+      }
     }
   }
 }
